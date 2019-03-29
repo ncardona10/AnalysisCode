@@ -1,7 +1,6 @@
 /*
 @file PhenoAnalyzer.cc
 @author Andres Florez
-
 Code used to perform phenomenological analysis of Heavy Neutrinos in the tau channel
 */
 
