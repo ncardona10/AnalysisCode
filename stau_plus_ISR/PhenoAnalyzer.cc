@@ -6,6 +6,7 @@ Code used to perform phenomenological analysis of Heavy Neutrinos in the tau cha
 */
 
 #include "PhenoAnalyzer.h"
+#include <string>
 
 int main(int argc, char *argv[]){
 
@@ -42,7 +43,7 @@ PhenoAnalysis::PhenoAnalysis(TChain& chain, TFile* theFile, TDirectory *cdDir[],
   
   double b_jet_pt_min = params->GetValue ("b_jet_pt_min", 30.0);
   
-  crateHistoMasps(nDir);
+  createHistoMaps(nDir);
   
   ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
   Long64_t numberOfEntries = treeReader->GetEntries();
@@ -128,11 +129,12 @@ PhenoAnalysis::PhenoAnalysis(TChain& chain, TFile* theFile, TDirectory *cdDir[],
     else phi = TMath::Abs(phi);
     return phi;
   }
-  void PhenoAnalysis::crateHistoMasps (int directories)
+  void PhenoAnalysis::createHistoMaps (int directories)
   {
-    for (Int_t i = 0; i < directories; i++)
+    for (int i = 0; i < directories; i++)
       {
-	_hmap_Nevents[i]       = new TH1F("Nevents", "Nevents", 3,0,3);
+        std::string si = std::to_string(i);
+	      _hmap_Nevents[i] = new TH1F("N_events_" + si, "N_events_" + si, 3,0,3);
       }
   }
   
