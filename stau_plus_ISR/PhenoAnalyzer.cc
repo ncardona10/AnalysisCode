@@ -44,7 +44,9 @@ PhenoAnalysis::PhenoAnalysis(TChain& chain, TFile* theFile, TDirectory *cdDir[],
   double b_jet_pt_min = params->GetValue ("b_jet_pt_min", 30.0);
   
   createHistoMaps(nDir);
-  
+ 
+
+ 
   ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
   Long64_t numberOfEntries = treeReader->GetEntries();
   
@@ -133,8 +135,14 @@ PhenoAnalysis::PhenoAnalysis(TChain& chain, TFile* theFile, TDirectory *cdDir[],
   {
     for (int i = 0; i < directories; i++)
       {
-        std::string si = std::to_string(i);
-	      _hmap_Nevents[i] = new TH1F("N_events_" + si, "N_events_" + si, 3,0,3);
+        std::string si = "N_events_"+ std::to_string(i);
+	char char_array[si.length() + 1]; 
+        strcpy(char_array, si.c_str()); 
+        printf(char_array);
+	printf("\n");
+	_hmap_Nevents[i] = new TH1F(char_array, char_array, 3,0.0,3.0);
       }
+      printf("finished createHistoMaps\n`");
+
   }
   
