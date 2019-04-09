@@ -17,7 +17,7 @@ class PhenoAnalysis {
 public :
    PhenoAnalysis(TChain&, TFile*, TDirectory* dir[], int nDir);
    ~PhenoAnalysis();
-   void crateHistoMasps (int);
+   void createHistoMaps (int);
    bool overlapingObjects(double, double, double, double, double);
    double calculateE(double, double, double);
    double normalizedDphi(double);
