@@ -32,7 +32,8 @@ int main(int argc, char *argv[])
 
 
   // create all directories
-  TDirectory *theDirectory[nDir] = createDirectories(HistoOutputFile, nDir);
+  TDirectory *theDirectory[nDir];
+  theDirectory = createDirectories(HistoOutputFile, nDir);
 
   printf("antes de phenoanalisis---------------------------------------------\n");
   PhenoAnalysis BSM_analysis(treeReader, HistoOutputFile, theDirectory, nDir);
@@ -65,7 +66,7 @@ TDirectory *createDirectories(TFile *HistoOutputFile, int nDir)
     theDirectory[i] = HistoOutputFile->mkdir(namesDirectories[i].c_str());
   }
 
-  return theDirectory;
+  return &theDirectory;
 }
 
 PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDirectory *cdDir[], int nDir)
