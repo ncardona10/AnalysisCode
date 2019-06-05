@@ -3,8 +3,10 @@ CXX=g++
 
 # Name of the main file and the target file
 MAINFILE=PhenoAnalyzer.cc
+MAINFILE_PARALLEL=PhenoAnalyzerParallel.cc
 #MAINFILE=PhenoAnalyzer.cc
 TARGETFILE=PhenoAnalyzer
+TARGETFILE_PARALLEL=PhenoAnalyzerParallel
 HEADERS==PhenoAnalyzer.h
 OTHERFILES=ROOTFunctions.h DelphesFunctions.h #mt2_bisect.h  # Other files
 #SOURCEFILES=mt2_bisect.cpp #mt2bl_bisect.cpp mt2w_bisect.cpp 
@@ -68,3 +70,8 @@ compile_ROOT_Delphes: $(MAINFILE) $(OTHERFILES)
 	-I$(DELPHESINC) -I$(EXROOTINC)	\
 	-L$(DELPHESLIB) -lDelphes -L$(EXROOTLIB) -lExRootAnalysis $(ROOTLIBS)
 
+# To compile with Root and Delphes in parallel mode
+compile_ROOT_Delphes_parallel: $(MAINFILE) $(OTHERFILES)
+	$(CXX) -fopenmp -o $(TARGETFILE_PARALLEL) $(MAINFILE_PARALLEL) $(SOURCEFILES) -Wall $(ROOTCFLAGS) 	\
+	-I$(DELPHESINC) -I$(EXROOTINC)	\
+	-L$(DELPHESLIB) -lDelphes -L$(EXROOTLIB) -lExRootAnalysis $(ROOTLIBS)
