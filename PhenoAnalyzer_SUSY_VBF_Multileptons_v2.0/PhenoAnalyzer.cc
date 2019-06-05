@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 }
 
 using namespace std;
-PhenoAnalysis::PhenoAnalysis(ExRootTreeReader treeReader, TFile *theFile, TDirectory *cdDir[], int nDir)
+PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDirectory *cdDir[], int nDir)
 {
   ifstream inFile;
   inFile.open("config.in", ios::in);

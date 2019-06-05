@@ -15,7 +15,7 @@ using namespace std;
 
 class PhenoAnalysis {
 public :
-   PhenoAnalysis(ExRootTreeReader, TFile*, TDirectory* dir[], int nDir);
+   PhenoAnalysis(ExRootTreeReader*, TFile*, TDirectory* dir[], int nDir);
    virtual ~PhenoAnalysis();
    void createHistoMaps (int);
    bool overlapingObjects(double, double, double, double, double);
