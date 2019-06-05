@@ -16,7 +16,7 @@ using namespace std;
 class PhenoAnalysis {
 public :
    PhenoAnalysis(TChain&, TFile*, TDirectory* dir[], int nDir);
-   ~PhenoAnalysis();
+   virtual ~PhenoAnalysis();
    void createHistoMaps (int);
    bool overlapingObjects(double, double, double, double, double);
    double calculateE(double, double, double);

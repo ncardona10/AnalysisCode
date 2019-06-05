@@ -9,17 +9,23 @@ Code used to perform phenomenological analysis of Heavy Neutrinos in the tau cha
 
 #include "PhenoAnalyzer.h"
 #include <iostream>
-#include <omp.h>
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-  printf("starting phenoanalyzer----------------------------------\n");
-  //TApplication app("App",&argc, argv);
-  // gSystem->Load("libDelphes.so");
+  printf("starting phenoanalyzer...\n");
+
+
+  //Importing data from Delphes
   TChain chain("Delphes");
   chain.Add(argv[1]);
+  ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
+
+
+
+
+
   TFile *HistoOutputFile = new TFile(argv[2], "RECREATE");
   int nDir = 16;
   TDirectory *theDirectory[nDir];
@@ -56,7 +62,7 @@ int main(int argc, char *argv[])
 }
 
 using namespace std;
-PhenoAnalysis::PhenoAnalysis(TChain &chain, TFile *theFile, TDirectory *cdDir[], int nDir)
+PhenoAnalysis::PhenoAnalysis(ExRootTreeReader treeReader, TFile *theFile, TDirectory *cdDir[], int nDir)
 {
   ifstream inFile;
   inFile.open("config.in", ios::in);
@@ -102,7 +108,7 @@ PhenoAnalysis::PhenoAnalysis(TChain &chain, TFile *theFile, TDirectory *cdDir[],
   createHistoMaps(nDir);
 
 
-  ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
+  
   Long64_t numberOfEntries = treeReader->GetEntries();
 
   TClonesArray *branchJet = treeReader->UseBranch("Jet");
@@ -128,6 +134,12 @@ PhenoAnalysis::PhenoAnalysis(TChain &chain, TFile *theFile, TDirectory *cdDir[],
   std::map<unsigned int, TLorentzVector> elecElec_TLV;
   std::map<unsigned int, TLorentzVector> pairs_elecElec_TLV;
 
+  //            __n__n__
+  //     .------`-\00/-'
+  //    /  ##  ## (oo)
+  //   / \## __   ./
+  //      |//YY \|/
+  //      |||   |||
   std::map<unsigned int, TLorentzVector> muMuMu_TLV;
   std::map<unsigned int, TLorentzVector> trio_muMuMu_TLV;
 
@@ -138,7 +150,6 @@ PhenoAnalysis::PhenoAnalysis(TChain &chain, TFile *theFile, TDirectory *cdDir[],
   cout<< numberOfEntries << endl;
   printf("number of entries ^^^^^\n");
 
-  #pragma omp parallel for
   for (int entry = 0; entry < numberOfEntries; ++entry)
   {
     cout<< "\r" << (100.0*entry)/numberOfEntries;
