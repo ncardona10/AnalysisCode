@@ -8,10 +8,12 @@ Code used to perform phenomenological analysis of Heavy Neutrinos in the tau cha
 */
 
 #include "PhenoAnalyzer.h"
+#include <iostream>
+using namespace std;
 
 int main(int argc, char *argv[])
 {
-
+  printf("starting phenoanalyzer----------------------------------\n");
   //TApplication app("App",&argc, argv);
   // gSystem->Load("libDelphes.so");
   TChain chain("Delphes");
@@ -46,8 +48,9 @@ int main(int argc, char *argv[])
   theDirectory[14] = HistoOutputFile->mkdir("TriLepton_MuMuMu");
   // elElEl trio
   theDirectory[15] = HistoOutputFile->mkdir("TriLepton_eee");
-
+  printf("antes de phenoanalisis---------------------------------------------\n");
   PhenoAnalysis BSM_analysis(chain, HistoOutputFile, theDirectory, nDir);
+  printf("termino-------------------------------------------------------\n");
 }
 
 using namespace std;
@@ -66,8 +69,10 @@ PhenoAnalysis::PhenoAnalysis(TChain &chain, TFile *theFile, TDirectory *cdDir[],
 
   //This set of lines are used to open and read the "config.in" file.
   ///////////////////////////////////////////////////////////////////////
+  printf("reading config files\n");
   TEnv *params = new TEnv("config_file");
   params->ReadFile("config.in", kEnvChange);
+  printf("read confing files");
 
   double b_jet_pt_min = params->GetValue("b_jet_pt_min", 30.0);
   double DR_jet_lep_max = params->GetValue("DR_jet_lep_max", 0.3);
@@ -93,6 +98,7 @@ PhenoAnalysis::PhenoAnalysis(TChain &chain, TFile *theFile, TDirectory *cdDir[],
   double elecElec_mass_input = params->GetValue("elecElec_mass_input", 10.);
 
   createHistoMaps(nDir);
+
 
   ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
   Long64_t numberOfEntries = treeReader->GetEntries();
@@ -126,9 +132,13 @@ PhenoAnalysis::PhenoAnalysis(TChain &chain, TFile *theFile, TDirectory *cdDir[],
   std::map<unsigned int, TLorentzVector> elElEl_TLV;
   std::map<unsigned int, TLorentzVector> trio_elElEl_TLV;
 
+  printf("for num entries\n");
+  cout<< numberOfEntries << endl;
+  printf("number of entries ^^^^^\n");
+
   for (Int_t entry = 0; entry < numberOfEntries; ++entry)
   {
-
+    cout<< "\r" << (100.0*entry)/numberOfEntries;
     treeReader->ReadEntry(entry);
     int pass_cuts[nDir];
     TLorentzVector jetLeadingVec(0., 0., 0., 0.);
