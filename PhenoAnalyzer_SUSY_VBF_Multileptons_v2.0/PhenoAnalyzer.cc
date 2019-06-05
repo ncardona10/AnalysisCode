@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
   for (int i = 0; (unsigned) i < namesDirectories.size(); i++)
   {
-    theDirectory[i] = HistoOutputFile->mkdir(namesDirectories[i]);
+    theDirectory[i] = HistoOutputFile->mkdir(namesDirectories[i].c_str());
   }
   
   // theDirectory[0] = HistoOutputFile->mkdir("No_cuts");
