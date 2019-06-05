@@ -15,75 +15,59 @@ Code used to perform phenomenological analysis of Heavy Neutrinos in the tau cha
 
 using namespace std;
 
+TDirectory *createDirectories(TFile *HistoOutputFile, int nDir);
+
 int main(int argc, char *argv[])
 {
-  cout<<"Starting phenoanalyzer..."<<endl;
+  cout << "Starting phenoanalyzer..." << endl;
 
   // Importing Delphes data
   TChain chain("Delphes");
   chain.Add(argv[1]);
   ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
 
-
+  // Output file manager
   TFile *HistoOutputFile = new TFile(argv[2], "RECREATE");
   int nDir = 16;
-  TDirectory *theDirectory[nDir];
 
-  vector<string> namesDirectories = { "No_cuts",
-                                      "jets_kinematics",
-                                      "noBjets",
-                                      "METcut",
-                                      "VBF_deltaEta",
-                                      "Dijet_mass",
-                                      "singleLepton_tau",
-                                      "singleLepton_muon",
-                                      "singleLepton_elec",
-                                      "DiLepton_muTau",
-                                      "DiLepton_muMu",
-                                      "DiLepton_tauTau",
-                                      "DiLepton_eTau",
-                                      "DiLepton_ee",
-                                      "TriLepton_MuMuMu",
-                                      "TriLepton_eee"};
 
-  for (int i = 0; (unsigned) i < namesDirectories.size(); i++)
-  {
-    theDirectory[i] = HistoOutputFile->mkdir(namesDirectories[i].c_str());
-  }
-  
-  // theDirectory[0] = HistoOutputFile->mkdir("No_cuts");
-  // // VBF Cuts
-  // theDirectory[1] = HistoOutputFile->mkdir("noBjets");
-  // theDirectory[2] = HistoOutputFile->mkdir("jets_kinematics");
-  // theDirectory[3] = HistoOutputFile->mkdir("METcut");
-  // theDirectory[4] = HistoOutputFile->mkdir("VBF_deltaEta");
-  // theDirectory[5] = HistoOutputFile->mkdir("Dijet_mass");
-  // // Single tau
-  // theDirectory[6] = HistoOutputFile->mkdir("singleLepton_tau");
-  // // Single muon
-  // theDirectory[7] = HistoOutputFile->mkdir("singleLepton_muon");
-  // // Single electron
-  // theDirectory[8] = HistoOutputFile->mkdir("singleLepton_elec");
-  // // muTau pair
-  // theDirectory[9] = HistoOutputFile->mkdir("DiLepton_muTau");
-  // // muMu pairs
-  // theDirectory[10] = HistoOutputFile->mkdir("DiLepton_muMu");
-  // // tauTau pairs
-  // theDirectory[11] = HistoOutputFile->mkdir("DiLepton_tauTau");
-  // // elecTau pair
-  // theDirectory[12] = HistoOutputFile->mkdir("DiLepton_eTau");
-  // // elecElec pair
-  // theDirectory[13] = HistoOutputFile->mkdir("DiLepton_ee");
-  // // muMuMu trio
-  // theDirectory[14] = HistoOutputFile->mkdir("TriLepton_MuMuMu");
-  // // elElEl trio
-  // theDirectory[15] = HistoOutputFile->mkdir("TriLepton_eee");
+  // create all directories
+  TDirectory *theDirectory[nDir] = createDirectories(HistoOutputFile, nDir);
+
   printf("antes de phenoanalisis---------------------------------------------\n");
   PhenoAnalysis BSM_analysis(treeReader, HistoOutputFile, theDirectory, nDir);
   printf("termino-------------------------------------------------------\n");
 }
 
-using namespace std;
+TDirectory *createDirectories(TFile *HistoOutputFile, int nDir)
+{
+  TDirectory *theDirectory[nDir];
+
+  vector<string> namesDirectories = {"No_cuts",
+                                     "jets_kinematics",
+                                     "noBjets",
+                                     "METcut",
+                                     "VBF_deltaEta",
+                                     "Dijet_mass",
+                                     "singleLepton_tau",
+                                     "singleLepton_muon",
+                                     "singleLepton_elec",
+                                     "DiLepton_muTau",
+                                     "DiLepton_muMu",
+                                     "DiLepton_tauTau",
+                                     "DiLepton_eTau",
+                                     "DiLepton_ee",
+                                     "TriLepton_MuMuMu",
+                                     "TriLepton_eee"};
+
+  for (int i = 0; (unsigned)i < namesDirectories.size(); i++)
+  {
+    theDirectory[i] = HistoOutputFile->mkdir(namesDirectories[i].c_str());
+  }
+
+  return theDirectory;
+}
+
 PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDirectory *cdDir[], int nDir)
 {
   ifstream inFile;
@@ -129,8 +113,6 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
   createHistoMaps(nDir);
 
-
-  
   Long64_t numberOfEntries = treeReader->GetEntries();
 
   TClonesArray *branchJet = treeReader->UseBranch("Jet");
@@ -155,7 +137,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
   std::map<unsigned int, TLorentzVector> elecElec_TLV;
   std::map<unsigned int, TLorentzVector> pairs_elecElec_TLV;
- 
+
   std::map<unsigned int, TLorentzVector> muMuMu_TLV;
   std::map<unsigned int, TLorentzVector> trio_muMuMu_TLV;
 
@@ -163,12 +145,12 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
   std::map<unsigned int, TLorentzVector> trio_elElEl_TLV;
 
   printf("for num entries\n");
-  cout<< numberOfEntries << endl;
+  cout << numberOfEntries << endl;
   printf("number of entries ^^^^^\n");
 
   for (Int_t entry = 0; entry < numberOfEntries; ++entry)
   {
-    cout<< "\r" << (100.0*entry)/numberOfEntries;
+    cout << "\r" << (100.0 * entry) / numberOfEntries;
     treeReader->ReadEntry(entry);
     int pass_cuts[nDir];
     TLorentzVector jetLeadingVec(0., 0., 0., 0.);
