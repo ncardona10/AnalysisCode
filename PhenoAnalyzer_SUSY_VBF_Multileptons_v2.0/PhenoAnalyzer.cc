@@ -9,6 +9,10 @@ Code used to perform phenomenological analysis of Heavy Neutrinos in the tau cha
 
 #include "PhenoAnalyzer.h"
 #include <iostream>
+#include <string>
+#include <map>
+#include <vector>
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -24,33 +28,56 @@ int main(int argc, char *argv[])
   TFile *HistoOutputFile = new TFile(argv[2], "RECREATE");
   int nDir = 16;
   TDirectory *theDirectory[nDir];
-  theDirectory[0] = HistoOutputFile->mkdir("No_cuts");
-  // VBF Cuts
-  theDirectory[1] = HistoOutputFile->mkdir("noBjets");
-  theDirectory[2] = HistoOutputFile->mkdir("jets_kinematics");
-  theDirectory[3] = HistoOutputFile->mkdir("METcut");
-  theDirectory[4] = HistoOutputFile->mkdir("VBF_deltaEta");
-  theDirectory[5] = HistoOutputFile->mkdir("Dijet_mass");
-  // Single tau
-  theDirectory[6] = HistoOutputFile->mkdir("singleLepton_tau");
-  // Single muon
-  theDirectory[7] = HistoOutputFile->mkdir("singleLepton_muon");
-  // Single electron
-  theDirectory[8] = HistoOutputFile->mkdir("singleLepton_elec");
-  // muTau pair
-  theDirectory[9] = HistoOutputFile->mkdir("DiLepton_muTau");
-  // muMu pairs
-  theDirectory[10] = HistoOutputFile->mkdir("DiLepton_muMu");
-  // tauTau pairs
-  theDirectory[11] = HistoOutputFile->mkdir("DiLepton_tauTau");
-  // elecTau pair
-  theDirectory[12] = HistoOutputFile->mkdir("DiLepton_eTau");
-  // elecElec pair
-  theDirectory[13] = HistoOutputFile->mkdir("DiLepton_ee");
-  // muMuMu trio
-  theDirectory[14] = HistoOutputFile->mkdir("TriLepton_MuMuMu");
-  // elElEl trio
-  theDirectory[15] = HistoOutputFile->mkdir("TriLepton_eee");
+
+  vector<string> namesDirectories = { "No_cuts",
+                                      "jets_kinematics",
+                                      "noBjets",
+                                      "METcut",
+                                      "VBF_deltaEta",
+                                      "Dijet_mass",
+                                      "singleLepton_tau",
+                                      "singleLepton_muon",
+                                      "singleLepton_elec",
+                                      "DiLepton_muTau",
+                                      "DiLepton_muMu",
+                                      "DiLepton_tauTau",
+                                      "DiLepton_eTau",
+                                      "DiLepton_ee",
+                                      "TriLepton_MuMuMu",
+                                      "TriLepton_eee"};
+
+  for (int i = 0; i < namesDirectories.size(); i++)
+  {
+    theDirectory[i] = HistoOuputFile->mkdir(namesDirectories[i]);
+  }
+  
+  // theDirectory[0] = HistoOutputFile->mkdir("No_cuts");
+  // // VBF Cuts
+  // theDirectory[1] = HistoOutputFile->mkdir("noBjets");
+  // theDirectory[2] = HistoOutputFile->mkdir("jets_kinematics");
+  // theDirectory[3] = HistoOutputFile->mkdir("METcut");
+  // theDirectory[4] = HistoOutputFile->mkdir("VBF_deltaEta");
+  // theDirectory[5] = HistoOutputFile->mkdir("Dijet_mass");
+  // // Single tau
+  // theDirectory[6] = HistoOutputFile->mkdir("singleLepton_tau");
+  // // Single muon
+  // theDirectory[7] = HistoOutputFile->mkdir("singleLepton_muon");
+  // // Single electron
+  // theDirectory[8] = HistoOutputFile->mkdir("singleLepton_elec");
+  // // muTau pair
+  // theDirectory[9] = HistoOutputFile->mkdir("DiLepton_muTau");
+  // // muMu pairs
+  // theDirectory[10] = HistoOutputFile->mkdir("DiLepton_muMu");
+  // // tauTau pairs
+  // theDirectory[11] = HistoOutputFile->mkdir("DiLepton_tauTau");
+  // // elecTau pair
+  // theDirectory[12] = HistoOutputFile->mkdir("DiLepton_eTau");
+  // // elecElec pair
+  // theDirectory[13] = HistoOutputFile->mkdir("DiLepton_ee");
+  // // muMuMu trio
+  // theDirectory[14] = HistoOutputFile->mkdir("TriLepton_MuMuMu");
+  // // elElEl trio
+  // theDirectory[15] = HistoOutputFile->mkdir("TriLepton_eee");
   printf("antes de phenoanalisis---------------------------------------------\n");
   PhenoAnalysis BSM_analysis(treeReader, HistoOutputFile, theDirectory, nDir);
   printf("termino-------------------------------------------------------\n");
