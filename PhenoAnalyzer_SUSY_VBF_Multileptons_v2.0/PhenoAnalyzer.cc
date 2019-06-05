@@ -13,11 +13,14 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  printf("starting phenoanalyzer----------------------------------\n");
-  //TApplication app("App",&argc, argv);
-  // gSystem->Load("libDelphes.so");
+  cout<<"Starting phenoanalyzer..."<<endl;
+
+  // Importing Delphes data
   TChain chain("Delphes");
   chain.Add(argv[1]);
+  ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
+
+
   TFile *HistoOutputFile = new TFile(argv[2], "RECREATE");
   int nDir = 16;
   TDirectory *theDirectory[nDir];
@@ -49,12 +52,12 @@ int main(int argc, char *argv[])
   // elElEl trio
   theDirectory[15] = HistoOutputFile->mkdir("TriLepton_eee");
   printf("antes de phenoanalisis---------------------------------------------\n");
-  PhenoAnalysis BSM_analysis(chain, HistoOutputFile, theDirectory, nDir);
+  PhenoAnalysis BSM_analysis(treeReader, HistoOutputFile, theDirectory, nDir);
   printf("termino-------------------------------------------------------\n");
 }
 
 using namespace std;
-PhenoAnalysis::PhenoAnalysis(TChain &chain, TFile *theFile, TDirectory *cdDir[], int nDir)
+PhenoAnalysis::PhenoAnalysis(ExRootTreeReader treeReader, TFile *theFile, TDirectory *cdDir[], int nDir)
 {
   ifstream inFile;
   inFile.open("config.in", ios::in);
@@ -100,7 +103,7 @@ PhenoAnalysis::PhenoAnalysis(TChain &chain, TFile *theFile, TDirectory *cdDir[],
   createHistoMaps(nDir);
 
 
-  ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
+  
   Long64_t numberOfEntries = treeReader->GetEntries();
 
   TClonesArray *branchJet = treeReader->UseBranch("Jet");
