@@ -131,7 +131,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
   for (int i = 0; (unsigned) i < configDict.size(); i++)
   {
-    configDict[configDict[i]] = params->GetValue(configDict[i], defaultConfigValues[i]);
+    configDict[vectKeys[i]] = params->GetValue(vectKeys[i], defaultConfigValues[i]);
   }
   
 
