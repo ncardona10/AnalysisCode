@@ -136,28 +136,28 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
   
 
 
-  double b_jet_pt_min = params->GetValue("b_jet_pt_min", 30.0);
-  double DR_jet_lep_max = params->GetValue("DR_jet_lep_max", 0.3);
-  double jet_min_pt = params->GetValue("jet_min_pt", 30.0);
-  double jet_max_eta = params->GetValue("jet_max_eta", 5);
-  double VBF_jetPt_min = params->GetValue("VBF_jetPt_min", 30.0);
-  double tau_pt_cut = params->GetValue("tau_pt_cut", 20.);
-  double tau_pt_cut_max = params->GetValue("tau_pt_cut_max", 40.);
-  double tau_eta_cut = params->GetValue("tau_eta_cut", 2.3);
-  double deltaEta_diJet_cut = params->GetValue("deltaEta_diJet_cut", 3.8);
-  double diJetmass_cut = params->GetValue("diJetmass_cut", 500.0);
-  double MET_cut = params->GetValue("MET_cut", 250.0);
-  double muon_pt_cut = params->GetValue("muon_pt_cut", 8.);
-  double muon_pt_cut_max = params->GetValue("muon_pt_cu_max", 40.);
-  double muon_eta_cut = params->GetValue("muon_eta_cut", 2.5);
-  double elec_pt_cut = params->GetValue("elec_pt_cut", 8.0);
-  double elec_pt_cut_max = params->GetValue("elec_pt_cut_max", 40.0);
-  double elec_eta_cut = params->GetValue("elec_eta_cut", 8.);
-  double muTau_mass_input = params->GetValue("muTau_mass_input", 10.);
-  double muMu_mass_input = params->GetValue("muMu_mass_input", 10.);
-  double tauTau_mass_input = params->GetValue("tauTau_mass_input", 10.);
-  double elecTau_mass_input = params->GetValue("elecTau_mass_input", 10.);
-  double elecElec_mass_input = params->GetValue("elecElec_mass_input", 10.);
+  // double configDict["b_jet_pt_min"] = params->GetValue("b_jet_pt_min", 30.0);
+  // double configDict["DR_jet_lep_max"] = params->GetValue("DR_jet_lep_max", 0.3);
+  // double configDict["jet_min_pt"] = params->GetValue("jet_min_pt", 30.0);
+  // double configDict["jet_max_eta"] = params->GetValue("jet_max_eta", 5);
+  // double configDict["VBF_jetPt_min"] = params->GetValue("VBF_jetPt_min", 30.0);
+  // double configDict["tau_pt_cut"] = params->GetValue("tau_pt_cut", 20.);
+  // double configDict["tau_pt_cut_max"] = params->GetValue("tau_pt_cut_max", 40.);
+  // double configDict["tau_eta_cut"] = params->GetValue("tau_eta_cut", 2.3);
+  // double configDict["deltaEta_diJet_cut"] = params->GetValue("deltaEta_diJet_cut", 3.8);
+  // double configDict["diJetmass_cut"] = params->GetValue("diJetmass_cut", 500.0);
+  // double configDict["MET_cut"] = params->GetValue("MET_cut", 250.0);
+  // double configDict["muon_pt_cut"] = params->GetValue("muon_pt_cut", 8.);
+  // double configDict["muon_pt_cut_max"] = params->GetValue("muon_pt_cu_max", 40.);
+  // double configDict["muon_eta_cut"] = params->GetValue("muon_eta_cut", 2.5);
+  // double configDict["elec_pt_cut"] = params->GetValue("elec_pt_cut", 8.0);
+  // double configDict["elec_pt_cut_max"] = params->GetValue("elec_pt_cut_max", 40.0);
+  // double configDict["elec_eta_cut"] = params->GetValue("elec_eta_cut", 8.);
+  // double configDict["muTau_mass_input"] = params->GetValue("muTau_mass_input", 10.);
+  // double configDict["muMu_mass_input"] = params->GetValue("muMu_mass_input", 10.);
+  // double configDict["tauTau_mass_input"] = params->GetValue("tauTau_mass_input", 10.);
+  // double configDict["elecTau_mass_input"] = params->GetValue("elecTau_mass_input", 10.);
+  // double configDict["elecElec_mass_input"] = params->GetValue("elecElec_mass_input", 10.);
 
   
   cout<< "done reading config files."<<cout;
@@ -267,7 +267,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
       Jet *jet = (Jet *)branchJet->At(j);
 
-      if ((jet->BTag == 1) && (jet->PT > b_jet_pt_min))
+      if ((jet->BTag == 1) && (jet->PT > configDict["b_jet_pt_min"]))
       {
         nBJets++;
       }
@@ -338,25 +338,25 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       double DR_tau3_muon = Tau3HadTLV.DeltaR(muon_i);
       double DR_tau4_muon = Tau4HadTLV.DeltaR(muon_i);
 
-      if (DR_tau4_muon < DR_jet_lep_max)
+      if (DR_tau4_muon < configDict["DR_jet_lep_max"])
       {
         tau4_muon_overlap = true;
         Tau4HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
         ntau_counter--;
       }
-      if (DR_tau3_muon < DR_jet_lep_max)
+      if (DR_tau3_muon < configDict["DR_jet_lep_max"])
       {
         tau3_muon_overlap = true;
         Tau3HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
         ntau_counter--;
       }
-      if (DR_tau2_muon < DR_jet_lep_max)
+      if (DR_tau2_muon < configDict["DR_jet_lep_max"])
       {
         tau2_muon_overlap = true;
         Tau2HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
         ntau_counter--;
       }
-      if (DR_tau1_muon < DR_jet_lep_max)
+      if (DR_tau1_muon < configDict["DR_jet_lep_max"])
       {
         tau1_muon_overlap = true;
         Tau1HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
@@ -429,25 +429,25 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       double DR_tau3_elec = Tau3HadTLV.DeltaR(elec_i);
       double DR_tau4_elec = Tau4HadTLV.DeltaR(elec_i);
 
-      if (DR_tau4_elec < DR_jet_lep_max)
+      if (DR_tau4_elec < configDict["DR_jet_lep_max"])
       {
         tau4_elec_overlap = true;
         Tau4HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
         ntau_counter--;
       }
-      if (DR_tau3_elec < DR_jet_lep_max)
+      if (DR_tau3_elec < configDict["DR_jet_lep_max"])
       {
         tau3_elec_overlap = true;
         Tau3HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
         ntau_counter--;
       }
-      if (DR_tau2_elec < DR_jet_lep_max)
+      if (DR_tau2_elec < configDict["DR_jet_lep_max"])
       {
         tau2_elec_overlap = true;
         Tau2HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
         ntau_counter--;
       }
-      if (DR_tau1_elec < DR_jet_lep_max)
+      if (DR_tau1_elec < configDict["DR_jet_lep_max"])
       {
         tau1_elec_overlap = true;
         Tau1HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
@@ -504,7 +504,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
       Jet *jet = (Jet *)branchJet->At(l);
 
-      if ((jet->PT > jet_min_pt) && (jet->TauTag == 0) && (jet->BTag == 0))
+      if ((jet->PT > configDict["jet_min_pt"]) && (jet->TauTag == 0) && (jet->BTag == 0))
       {
 
         double jet_i_energy = calculateE(jet->Eta, jet->PT, jet->Mass);
@@ -525,66 +525,66 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
         double DR_elec3_jet = Elec3HadTLV.DeltaR(jet_i);
         double DR_elec4_jet = Elec4HadTLV.DeltaR(jet_i);
 
-        if (DR_tau1_jet < DR_jet_lep_max)
+        if (DR_tau1_jet < configDict["DR_jet_lep_max"])
         {
           Tau1HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           ntau_counter--;
         }
-        if (DR_tau2_jet < DR_jet_lep_max)
+        if (DR_tau2_jet < configDict["DR_jet_lep_max"])
         {
           Tau2HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           ntau_counter--;
         }
-        if (DR_tau3_jet < DR_jet_lep_max)
+        if (DR_tau3_jet < configDict["DR_jet_lep_max"])
         {
           Tau3HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           ntau_counter--;
         }
-        if (DR_tau4_jet < DR_jet_lep_max)
+        if (DR_tau4_jet < configDict["DR_jet_lep_max"])
         {
           Tau4HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           ntau_counter--;
         }
 
         // remove overlaps of jets with muons
-        if (DR_muon1_jet < DR_jet_lep_max)
+        if (DR_muon1_jet < configDict["DR_jet_lep_max"])
         {
           Muon1HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           nmuon_counter--;
         }
-        if (DR_muon2_jet < DR_jet_lep_max)
+        if (DR_muon2_jet < configDict["DR_jet_lep_max"])
         {
           Muon2HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           nmuon_counter--;
         }
-        if (DR_muon3_jet < DR_jet_lep_max)
+        if (DR_muon3_jet < configDict["DR_jet_lep_max"])
         {
           Muon3HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           nmuon_counter--;
         }
-        if (DR_muon4_jet < DR_jet_lep_max)
+        if (DR_muon4_jet < configDict["DR_jet_lep_max"])
         {
           Muon4HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           nmuon_counter--;
         }
 
         // remove overlaps of jets with electrons
-        if (DR_elec1_jet < DR_jet_lep_max)
+        if (DR_elec1_jet < configDict["DR_jet_lep_max"])
         {
           Elec1HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           nelec_counter--;
         }
-        if (DR_elec2_jet < DR_jet_lep_max)
+        if (DR_elec2_jet < configDict["DR_jet_lep_max"])
         {
           Elec2HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           nelec_counter--;
         }
-        if (DR_elec3_jet < DR_jet_lep_max)
+        if (DR_elec3_jet < configDict["DR_jet_lep_max"])
         {
           Elec3HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           nelec_counter--;
         }
-        if (DR_elec4_jet < DR_jet_lep_max)
+        if (DR_elec4_jet < configDict["DR_jet_lep_max"])
         {
           Elec4HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
           nelec_counter--;
@@ -735,7 +735,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       }
       Jet_1 = jetsList[k];
 
-      if ((Jet_1.Pt() < VBF_jetPt_min) || (abs(Jet_1.Eta()) > 5.0))
+      if ((Jet_1.Pt() < configDict["VBF_jetPt_min"]) || (abs(Jet_1.Eta()) > 5.0))
       {
         continue;
       }
@@ -745,7 +745,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
         if (sj != k)
         {
           Jet_2 = jetsList[sj];
-          if ((Jet_2.Pt() < VBF_jetPt_min) || (abs(Jet_2.Eta()) > 5.0))
+          if ((Jet_2.Pt() < configDict["VBF_jetPt_min"]) || (abs(Jet_2.Eta()) > 5.0))
           {
             continue;
           }
@@ -789,7 +789,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     int jet_pt_condition = 0;
     for (Int_t i = 0; i < (Int_t)jetsList.size(); i++)
     {
-      if ((jetsList[i].Pt() > jet_min_pt) && (abs(jetsList[i].Eta()) < 5.0))
+      if ((jetsList[i].Pt() > config Dict["jet_min_pt"]) && (abs(jetsList[i].Eta()) < 5.0))
       {
         jet_pt_condition++;
       }
@@ -824,11 +824,11 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((muTau_TLV[i].Pt() > tau_pt_cut) && (abs(muTau_TLV[i].Eta()) < tau_eta_cut))
+      if ((muTau_TLV[i].Pt() > configDict["tau_pt_cut"]) && (abs(muTau_TLV[i].Eta()) < configDict["tau_eta_cut"]))
       {
         for (int j = 4; j < 8; j++)
         {
-          if ((muTau_TLV[j].Pt() > muon_pt_cut) && (abs(muTau_TLV[j].Eta() < muon_eta_cut)))
+          if ((muTau_TLV[j].Pt() > configDict["muon_pt_cut"]) && (abs(muTau_TLV[j].Eta() < configDict["muon_eta_cut"])))
           {
             double muTau_mass = (muTau_TLV[i] + muTau_TLV[j]).M();
             if (muTau_mass > muTau_mass_i)
@@ -851,11 +851,11 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((muMu_TLV[i].Pt() > muon_pt_cut) && (abs(muMu_TLV[i].Eta()) < muon_eta_cut))
+      if ((muMu_TLV[i].Pt() > configDict["muon_pt_cut"]) && (abs(muMu_TLV[i].Eta()) < configDict["muon_eta_cut"]))
       {
         for (int j = i + 1; j < 4; j++)
         {
-          if ((muMu_TLV[j].Pt() > muon_pt_cut) && (abs(muMu_TLV[j].Eta()) < muon_eta_cut) && (i != j))
+          if ((muMu_TLV[j].Pt() > configDict["muon_pt_cut"]) && (abs(muMu_TLV[j].Eta()) < configDict["muon_eta_cut"]) && (i != j))
           {
             double muMu_mass = (muMu_TLV[i] + muMu_TLV[j]).M();
             if (muMu_mass > muMu_mass_i)
@@ -878,11 +878,11 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((tauTau_TLV[i].Pt() > tau_pt_cut) && (abs(tauTau_TLV[i].Eta()) < tau_eta_cut))
+      if ((tauTau_TLV[i].Pt() > configDict["tau_pt_cut"]) && (abs(tauTau_TLV[i].Eta()) < configDict["tau_eta_cut"]))
       {
         for (int j = i + 1; j < 4; j++)
         {
-          if ((tauTau_TLV[j].Pt() > tau_pt_cut) && (abs(tauTau_TLV[j].Eta()) < tau_eta_cut) && (i != j))
+          if ((tauTau_TLV[j].Pt() > configDict["tau_pt_cut"]) && (abs(tauTau_TLV[j].Eta()) < configDict["tau_eta_cut"]) && (i != j))
           {
             double tauTau_mass = (tauTau_TLV[i] + tauTau_TLV[j]).M();
             if (tauTau_mass > tauTau_mass_i)
@@ -910,11 +910,11 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((elecTau_TLV[i].Pt() > elec_pt_cut) && (abs(elecTau_TLV[i].Eta()) < elec_eta_cut))
+      if ((elecTau_TLV[i].Pt() > configDict["elec_pt_cut"]) && (abs(elecTau_TLV[i].Eta()) < configDict["elec_eta_cut"]))
       {
         for (int j = 4; j < 8; j++)
         {
-          if ((elecTau_TLV[j].Pt() > tau_pt_cut) && (abs(elecTau_TLV[j].Eta()) < tau_eta_cut) && (i != j))
+          if ((elecTau_TLV[j].Pt() > configDict["tau_pt_cut"]) && (abs(elecTau_TLV[j].Eta()) < configDict["tau_eta_cut"]) && (i != j))
           {
             double elecTau_mass = (elecTau_TLV[i] + elecTau_TLV[j]).M();
             if (elecTau_mass > elecTau_mass_i)
@@ -938,11 +938,11 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((elecElec_TLV[i].Pt() > elec_pt_cut) && (abs(elecElec_TLV[i].Eta()) < elec_eta_cut))
+      if ((elecElec_TLV[i].Pt() > configDict["elec_pt_cut"]) && (abs(elecElec_TLV[i].Eta()) < configDict["elec_eta_cut"]))
       {
         for (int j = i + 1; j < 4; j++)
         {
-          if ((elecElec_TLV[j].Pt() > elec_pt_cut) && (abs(elecElec_TLV[j].Eta()) < elec_eta_cut) && (i != j))
+          if ((elecElec_TLV[j].Pt() > configDict["elec_pt_cut"]) && (abs(elecElec_TLV[j].Eta()) < configDict["elec_eta_cut"]) && (i != j))
           {
             double elecElec_mass = (elecElec_TLV[i] + elecElec_TLV[j]).M();
             if (elecElec_mass > elecElec_mass_i)
@@ -966,11 +966,11 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((muMuMu_TLV[i].Pt() > muon_pt_cut) && (abs(muMuMu_TLV[i].Eta()) < muon_eta_cut))
+      if ((muMuMu_TLV[i].Pt() > configDict["muon_pt_cut"]) && (abs(muMuMu_TLV[i].Eta()) < configDict["muon_eta_cut"]))
       {
         for (int j = i + 1; j < 4; j++)
         {
-          if ((muMuMu_TLV[j].Pt() > muon_pt_cut) && (abs(muMuMu_TLV[j].Eta()) < muon_eta_cut) && (i != j))
+          if ((muMuMu_TLV[j].Pt() > configDict["muon_pt_cut"]) && (abs(muMuMu_TLV[j].Eta()) < configDict["muon_eta_cut"]) && (i != j))
           {
             for (int k = j + 1; k < 4; k++)
             {
@@ -998,11 +998,11 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((elElEl_TLV[i].Pt() > elec_pt_cut) && (abs(elElEl_TLV[i].Eta()) < elec_eta_cut))
+      if ((elElEl_TLV[i].Pt() > configDict["elec_pt_cut"]) && (abs(elElEl_TLV[i].Eta()) < configDict["elec_eta_cut"]))
       {
         for (int j = i + 1; j < 4; j++)
         {
-          if ((elElEl_TLV[j].Pt() > elec_pt_cut) && (abs(elElEl_TLV[j].Eta()) < elec_eta_cut) && (i != j))
+          if ((elElEl_TLV[j].Pt() > configDict["elec_pt_cut"]) && (abs(elElEl_TLV[j].Eta()) < configDict["elec_eta_cut"]) && (i != j))
           {
             for (int k = j + 1; k < 4; k++)
             {
@@ -1032,72 +1032,75 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       pass_cuts[1] = 1;
     }
     // dijet kinematics
-    if ((pass_cuts[1] == 1) && (jetLeadingVec.Pt() > jet_min_pt) && (jetSleadingVec.Pt() > jet_min_pt) && (abs(jetLeadingVec.Eta()) < jet_max_eta) && (abs(jetSleadingVec.Eta()) < jet_max_eta))
+    if ((pass_cuts[1] == 1) && (jetLeadingVec.Pt() > configDict["jet_min_pt"]) && (jetSleadingVec.Pt() > configict["jet_min_pt"]) && (abs(jetLeadingVec.Eta()) < configDict["jet_max_eta"
+]) && (abs(jetSleadingVec.Eta()) < configDict["jet_max_eta"
+]))
     {
       pass_cuts[2] = 1;
     }
     // MET cut
-    if ((pass_cuts[2] == 1) && (MET > MET_cut))
+    if ((pass_cuts[2] == 1) && (MET > configDict["MET_cut"]))
     {
       pass_cuts[3] = 1;
     }
     // deltaEta cut
-    if ((pass_cuts[3] == 1) && (delta_eta_diJet > deltaEta_diJet_cut))
+    if ((pass_cuts[3] == 1) && (delta_eta_diJet > configDict["deltaEta_diJet_cut"]))
     {
       pass_cuts[4] = 1;
     }
     // diJet mass cut
-    if ((pass_cuts[4] == 1) && (DiJetMass_final > diJetmass_cut))
+    if ((pass_cuts[4] == 1) && (DiJetMass_final > configDict["diJetmass_cut"]))
     {
       pass_cuts[5] = 1;
     }
     // Events with 1 tau with kinematic cuts
-    if ((pass_cuts[5] == 1) && (ntau_counter == 1) && (nmuon_counter == 0) && (nelec_counter == 0) && (Tau1HadTLV.Pt() > tau_pt_cut) && (Tau1HadTLV.Pt() < tau_pt_cut_max) && (abs(Tau1HadTLV.Eta()) < tau_eta_cut))
+    if ((pass_cuts[5] == 1) && (ntau_counter == 1) && (nmuon_counter == 0) && (nelec_counter == 0) && (Tau1HadTLV.Pt() > configDict["tau_pt_cut"]) && (Tau1HadTLV.Pt() < configDict["tau_pt_cut_max"
+]) && (abs(Tau1HadTLV.Eta()) < configDict["tau_eta_cut"]))
     {
       pass_cuts[6] = 1;
     }
     // Events with 1 muon  with kinematic cuts
-    if ((pass_cuts[5] == 1) && (nmuon_counter == 1) && (ntau_counter == 0) && (nelec_counter == 0) && (Muon1HadTLV.Pt() > muon_pt_cut) && (Muon1HadTLV.Pt() < muon_pt_cut_max) && (abs(Muon1HadTLV.Eta()) < muon_eta_cut))
+    if ((pass_cuts[5] == 1) && (nmuon_counter == 1) && (ntau_counter == 0) && (nelec_counter == 0) && (Muon1HadTLV.Pt() > configDict["muon_pt_cut"]) && (Muon1HadTLV.Pt() < configDict["muon_pt_cut_max"]) && (abs(Muon1HadTLV.Eta()) < configDict["muon_eta_cut"]))
     {
       pass_cuts[7] = 1;
     }
     // Events with 1 electron with kinematic cuts
-    if ((pass_cuts[5] == 1) && (nelec_counter == 1) && (ntau_counter == 0) && (nmuon_counter == 0) && (Elec1HadTLV.Pt() > elec_pt_cut) && (Elec1HadTLV.Pt() < elec_pt_cut_max) && (abs(Elec1HadTLV.Eta()) < elec_eta_cut))
+    if ((pass_cuts[5] == 1) && (nelec_counter == 1) && (ntau_counter == 0) && (nmuon_counter == 0) && (Elec1HadTLV.Pt() > configDict["elec_pt_cut"]) && (Elec1HadTLV.Pt() < configDict["elec_pt_cut_max"]) && (abs(Elec1HadTLV.Eta()) < configDict["elec_eta_cut"]))
     {
       pass_cuts[8] = 1;
     }
-    // muTau kinematics
-    if ((pass_cuts[5] == 1) && (nmuon_counter == 1) && (ntau_counter == 1) && (nelec_counter == 0) && (pairs_muTau_TLV[0].Pt() > tau_pt_cut) && (pairs_muTau_TLV[1].Pt() > muon_pt_cut) && (abs(pairs_muTau_TLV[0].Eta()) < tau_eta_cut) && (abs(pairs_muTau_TLV[1].Eta()) < muon_eta_cut) && (muTau_mass_i > muTau_mass_input))
-    {
-      pass_cuts[9] = 1;
-    }
-    // muMu kinematics
-    if ((pass_cuts[5] == 1) && (nmuon_counter == 2) && (ntau_counter == 0) && (nelec_counter == 0) && (pairs_muMu_TLV[0].Pt() > muon_pt_cut) && (pairs_muMu_TLV[1].Pt() > muon_pt_cut) && (abs(pairs_muMu_TLV[0].Eta()) < muon_eta_cut) && (abs(pairs_muMu_TLV[1].Eta()) < muon_eta_cut) && (muMu_mass_i > muMu_mass_input))
-    {
-      pass_cuts[10] = 1;
-    }
-    // tauTau kinematics
-    if ((pass_cuts[5] == 1) && (ntau_counter == 2) && (nmuon_counter == 0) && (nelec_counter == 0) && (pairs_tauTau_TLV[0].Pt() > tau_pt_cut) && (pairs_tauTau_TLV[1].Pt() > tau_pt_cut) && (abs(pairs_tauTau_TLV[0].Eta()) < tau_eta_cut) && (abs(pairs_tauTau_TLV[1].Eta()) < tau_eta_cut) && (tauTau_mass_i > tauTau_mass_input))
-    {
-      pass_cuts[11] = 1;
-    }
-    // elecTau kinematics
-    if ((pass_cuts[5] == 1) && (nelec_counter == 1) && (ntau_counter == 1) && (nmuon_counter == 0) && (pairs_elecTau_TLV[0].Pt() > elec_pt_cut) && (pairs_elecTau_TLV[1].Pt() > tau_pt_cut) && (abs(pairs_elecTau_TLV[0].Eta()) < elec_eta_cut) && (abs(pairs_elecTau_TLV[1].Eta()) < tau_eta_cut) && (elecTau_mass_i > elecTau_mass_input))
-    {
-      pass_cuts[12] = 1;
-    }
-    // elecElec kinematics
-    if ((pass_cuts[5] == 1) && (nelec_counter == 2) && (ntau_counter == 0) && (nmuon_counter == 0) && (pairs_elecElec_TLV[0].Pt() > elec_pt_cut) && (pairs_elecElec_TLV[1].Pt() > elec_pt_cut) && (abs(pairs_elecElec_TLV[0].Eta()) < elec_eta_cut) && (abs(pairs_elecElec_TLV[1].Eta()) < elec_eta_cut) && (elecElec_mass_i > elecElec_mass_input))
+    // // muTau kinematics
+    // if ((pass_cuts[5] == 1) && (nmuon_counter == 1) && (ntau_counter == 1) && (nelec_counter == 0) && (pairs_muTau_TLV[0].Pt() > configDict["tau_pt_cut"]) && (pairs_muTau_TLV[1].Pt() > configDict["muon_pt_cut"]) && (abs(pairs_muTau_TLV[0].Eta()) < configDict["tau_eta_cut"]) && (abs(pairs_muTau_TLV[1].Eta()) < configDict["muon_eta_cut"]) && (muTau_mass_i > configDict["muTau_mass_input"]))
+    // {
+    //   pass_cuts[9] = 1;
+    // }
+    // // muMu kinematics
+    // if ((pass_cuts[5] == 1) && (nmuon_counter == 2) && (ntau_counter == 0) && (nelec_counter == 0) && (pairs_muMu_TLV[0].Pt() > configDict["muon_pt_cut"]) && (pairs_muMu_TLV[1].Pt() > configDict["muon_pt_cut"]) && (abs(pairs_muMu_TLV[0].Eta()) < configDict["muon_eta_cut"]) && (abs(pairs_muMu_TLV[1].Eta()) < configDict["muon_eta_cut"]) && (muMu_mass_i > configDict["muMu_mass_input"]))
+    // {
+    //   pass_cuts[10] = 1;
+    // }
+    // // tauTau kinematics
+    // if ((pass_cuts[5] == 1) && (ntau_counter == 2) && (nmuon_counter == 0) && (nelec_counter == 0) && (pairs_tauTau_TLV[0].Pt() > configDict["tau_pt_cut"]) && (pairs_tauTau_TLV[1].Pt() > configDict["tau_pt_cut"]) && (abs(pairs_tauTau_TLV[0].Eta()) < configDict["tau_eta_cut"]) && (abs(pairs_tauTau_TLV[1].Eta()) < configDict["tau_eta_cut"]) && (tauTau_mass_i > configDict["tauTau_mass_input"]))
+    // {
+    //   pass_cuts[11] = 1;
+    // }
+    // // elecTau kinematics
+    // if ((pass_cuts[5] == 1) && (nelec_counter == 1) && (ntau_counter == 1) && (nmuon_counter == 0) && (pairs_elecTau_TLV[0].Pt() > configDict["elec_pt_cut"]) && (pairs_elecTau_TLV[1].Pt() > configDict["tau_pt_cut"]) && (abs(pairs_elecTau_TLV[0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairs_elecTau_TLV[1].Eta()) < configDict["tau_eta_cut"]) && (elecTau_mass_i > configDict["elecTau_mass_input"]))
+    // {
+    //   pass_cuts[12] = 1;
+    // }
+    // // elecElec kinematics
+    // if ((pass_cuts[5] == 1) && (nelec_counter == 2) && (ntau_counter == 0) && (nmuon_counter == 0) && (pairs_elecElec_TLV[0].Pt() > configDict["elec_pt_cut"]) && (pairs_elecElec_TLV[1].Pt() > configDict["elec_pt_cut"]) && (abs(pairs_elecElec_TLV[0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairs_elecElec_TLV[1].Eta()) < configDict["elec_eta_cut"]) && (elecElec_mass_i > configDict["elecElec_mass_input"]))
     {
       pass_cuts[13] = 1;
     }
     // muMuMu kinematics
-    if ((pass_cuts[5] == 1) && (nmuon_counter == 3) && (ntau_counter == 0) && (nelec_counter == 0) && (trio_muMuMu_TLV[0].Pt() > muon_pt_cut) && (trio_muMuMu_TLV[1].Pt() > muon_pt_cut) && (trio_muMuMu_TLV[2].Pt() > muon_pt_cut) && (abs(trio_muMuMu_TLV[0].Eta()) < muon_eta_cut) && (abs(trio_muMuMu_TLV[1].Eta()) < muon_eta_cut) && (abs(trio_muMuMu_TLV[2].Eta()) < muon_eta_cut))
+    if ((pass_cuts[5] == 1) && (nmuon_counter == 3) && (ntau_counter == 0) && (nelec_counter == 0) && (trio_muMuMu_TLV[0].Pt() > configDict["muon_pt_cut"]) && (trio_muMuMu_TLV[1].Pt() > configDict["muon_pt_cut"]) && (trio_muMuMu_TLV[2].Pt() > configDict["muon_pt_cut"]) && (abs(trio_muMuMu_TLV[0].Eta()) < configDict["muon_eta_cut"]) && (abs(trio_muMuMu_TLV[1].Eta()) < configDict["muon_eta_cut"]) && (abs(trio_muMuMu_TLV[2].Eta()) < configDict["muon_eta_cut"]))
     {
       pass_cuts[14] = 1;
     }
     // elElEl kinematics
-    if ((pass_cuts[5] == 1) && (nelec_counter == 3) && (ntau_counter == 0) && (nmuon_counter == 0) && (trio_elElEl_TLV[0].Pt() > elec_pt_cut) && (trio_elElEl_TLV[1].Pt() > elec_pt_cut) && (trio_elElEl_TLV[2].Pt() > elec_pt_cut) && (abs(trio_elElEl_TLV[0].Eta()) < elec_eta_cut) && (abs(trio_elElEl_TLV[1].Eta()) < elec_eta_cut) && (abs(trio_elElEl_TLV[2].Eta()) < elec_eta_cut))
+    if ((pass_cuts[5] == 1) && (nelec_counter == 3) && (ntau_counter == 0) && (nmuon_counter == 0) && (trio_elElEl_TLV[0].Pt() > configDict["elec_pt_cut"]) && (trio_elElEl_TLV[1].Pt() > configDict["elec_pt_cut"]) && (trio_elElEl_TLV[2].Pt() > configDict["elec_pt_cut"]) && (abs(trio_elElEl_TLV[0].Eta()) < configDict["elec_eta_cut"]) && (abs(trio_elElEl_TLV[1].Eta()) < configDict["elec_eta_cut"]) && (abs(trio_elElEl_TLV[2].Eta()) < configDict["elec_eta_cut"]))
     {
       pass_cuts[15] = 1;
     }
