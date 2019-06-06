@@ -73,10 +73,68 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
   //This set of lines are used to open and read the "config.in" file.
   ///////////////////////////////////////////////////////////////////////
-  printf("reading config files\n");
+
+  // configuration file
+  cout<< "reading config file..."<<endl;
+  
   TEnv *params = new TEnv("config_file");
   params->ReadFile("config.in", kEnvChange);
-  printf("read confing files");
+
+  vector<string> vectKeys = { "b_jet_pt_min",
+                              "DR_jet_lep_max",
+                              "jet_min_pt",
+                              "jet_max_eta",
+                              "VBF_jetPt_min",
+                              "tau_pt_cut",
+                              "tau_pt_cut_max",
+                              "tau_eta_cut",
+                              "deltaEta_diJet_cut",
+                              "diJetmass_cut",
+                              "MET_cut",
+                              "muon_pt_cut",
+                              "muon_pt_cu_max",
+                              "muon_eta_cut",
+                              "elec_pt_cut",
+                              "elec_pt_cut_max",
+                              "elec_eta_cut",
+                              "muTau_mass_input",
+                              "muMu_mass_input",
+                              "tauTau_mass_input",
+                              "elecTau_mass_input",
+                              "elecElec_mass_input"};
+ 
+  vector<double> defaultConfigValues = {30.0,
+                                        0.3,
+                                        30.0,
+                                        5.,
+                                        30.0,
+                                        20.,
+                                        40.,
+                                        2.3,
+                                        3.8,
+                                        500.0,
+                                        250.0,
+                                        8.,
+                                        40.,
+                                        2.5,
+                                        8.0,
+                                        40.0,
+                                        8.,
+                                        10.,
+                                        10.,
+                                        10.,
+                                        10.,
+                                        10.};
+
+  
+  map<string, double> configDict;
+
+  for (int i = 0; (unsigned) i < configDict.size(); i++)
+  {
+    configDict[configDict[i]] = params->GetValue(configDict[i], defaultConfigValues[i]);
+  }
+  
+
 
   double b_jet_pt_min = params->GetValue("b_jet_pt_min", 30.0);
   double DR_jet_lep_max = params->GetValue("DR_jet_lep_max", 0.3);
@@ -100,6 +158,10 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
   double tauTau_mass_input = params->GetValue("tauTau_mass_input", 10.);
   double elecTau_mass_input = params->GetValue("elecTau_mass_input", 10.);
   double elecElec_mass_input = params->GetValue("elecElec_mass_input", 10.);
+
+  
+  cout<< "done reading config files."<<cout;
+  
 
   createHistoMaps(nDir);
 
