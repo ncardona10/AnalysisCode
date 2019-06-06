@@ -12,12 +12,17 @@ Code used to perform phenomenological analysis of Heavy Neutrinos in the tau cha
 #include <string>
 #include <map>
 #include <vector>
+#include <iomanip>
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
   cout<<"Starting phenoanalyzer..."<<endl;
+
+  // standardize print to 2 dp
+  cout<<fixed;
+  cout<<setprecision(2);
 
   // Importing Delphes data
   TChain chain("Delphes");
@@ -71,8 +76,6 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
   string inputType = "";
 
-  //This set of lines are used to open and read the "config.in" file.
-  ///////////////////////////////////////////////////////////////////////
 
   // configuration file
   cout<< "reading config file..."<<endl;
@@ -131,36 +134,12 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
   for (int i = 0; (unsigned) i < configDict.size(); i++)
   {
-    configDict[vectKeys[i]] = params->GetValue(vectKeys[i], defaultConfigValues[i]);
+    configDict[vectKeys[i]] = params->GetValue(vectKeys[i].c_str(), defaultConfigValues[i]);
   }
   
 
-
-  // double configDict["b_jet_pt_min"] = params->GetValue("b_jet_pt_min", 30.0);
-  // double configDict["DR_jet_lep_max"] = params->GetValue("DR_jet_lep_max", 0.3);
-  // double configDict["jet_min_pt"] = params->GetValue("jet_min_pt", 30.0);
-  // double configDict["jet_max_eta"] = params->GetValue("jet_max_eta", 5);
-  // double configDict["VBF_jetPt_min"] = params->GetValue("VBF_jetPt_min", 30.0);
-  // double configDict["tau_pt_cut"] = params->GetValue("tau_pt_cut", 20.);
-  // double configDict["tau_pt_cut_max"] = params->GetValue("tau_pt_cut_max", 40.);
-  // double configDict["tau_eta_cut"] = params->GetValue("tau_eta_cut", 2.3);
-  // double configDict["deltaEta_diJet_cut"] = params->GetValue("deltaEta_diJet_cut", 3.8);
-  // double configDict["diJetmass_cut"] = params->GetValue("diJetmass_cut", 500.0);
-  // double configDict["MET_cut"] = params->GetValue("MET_cut", 250.0);
-  // double configDict["muon_pt_cut"] = params->GetValue("muon_pt_cut", 8.);
-  // double configDict["muon_pt_cut_max"] = params->GetValue("muon_pt_cu_max", 40.);
-  // double configDict["muon_eta_cut"] = params->GetValue("muon_eta_cut", 2.5);
-  // double configDict["elec_pt_cut"] = params->GetValue("elec_pt_cut", 8.0);
-  // double configDict["elec_pt_cut_max"] = params->GetValue("elec_pt_cut_max", 40.0);
-  // double configDict["elec_eta_cut"] = params->GetValue("elec_eta_cut", 8.);
-  // double configDict["muTau_mass_input"] = params->GetValue("muTau_mass_input", 10.);
-  // double configDict["muMu_mass_input"] = params->GetValue("muMu_mass_input", 10.);
-  // double configDict["tauTau_mass_input"] = params->GetValue("tauTau_mass_input", 10.);
-  // double configDict["elecTau_mass_input"] = params->GetValue("elecTau_mass_input", 10.);
-  // double configDict["elecElec_mass_input"] = params->GetValue("elecElec_mass_input", 10.);
-
   
-  cout<< "done reading config files."<<cout;
+  cout<< "Done reading config files." << endl;
   
 
   createHistoMaps(nDir);
@@ -198,13 +177,12 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
   std::map<unsigned int, TLorentzVector> elElEl_TLV;
   std::map<unsigned int, TLorentzVector> trio_elElEl_TLV;
 
-  printf("for num entries\n");
-  cout<< numberOfEntries << endl;
-  printf("number of entries ^^^^^\n");
+  cout<< "Number of entries: " << numberOfEntries << endl;
 
   for (Int_t entry = 0; entry < numberOfEntries; ++entry)
   {
-    cout<< "\r" << (100.0*entry)/numberOfEntries;
+    // print percentage of completion
+    cout<< "\r" << (100.0*entry)/numberOfEntries<< "%";
     treeReader->ReadEntry(entry);
     int pass_cuts[nDir];
     TLorentzVector jetLeadingVec(0., 0., 0., 0.);
@@ -789,7 +767,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     int jet_pt_condition = 0;
     for (Int_t i = 0; i < (Int_t)jetsList.size(); i++)
     {
-      if ((jetsList[i].Pt() > config Dict["jet_min_pt"]) && (abs(jetsList[i].Eta()) < 5.0))
+      if ((jetsList[i].Pt() > configDict["jet_min_pt"]) && (abs(jetsList[i].Eta()) < 5.0))
       {
         jet_pt_condition++;
       }
@@ -1032,7 +1010,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       pass_cuts[1] = 1;
     }
     // dijet kinematics
-    if ((pass_cuts[1] == 1) && (jetLeadingVec.Pt() > configDict["jet_min_pt"]) && (jetSleadingVec.Pt() > configict["jet_min_pt"]) && (abs(jetLeadingVec.Eta()) < configDict["jet_max_eta"
+    if ((pass_cuts[1] == 1) && (jetLeadingVec.Pt() > configDict["jet_min_pt"]) && (jetSleadingVec.Pt() > configDict["jet_min_pt"]) && (abs(jetLeadingVec.Eta()) < configDict["jet_max_eta"
 ]) && (abs(jetSleadingVec.Eta()) < configDict["jet_max_eta"
 ]))
     {
