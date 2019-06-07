@@ -245,13 +245,13 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
       Jet *jet = (Jet *)branchJet->At(j);
 
-      if ((jet->BTag == 1) && (jet->PT > configDict["b_jet_pt_min"]))
+      if ((jet->BTag == 1) && (abs(jet->Eta) < 2.5) && (jet->PT > configDict["b_jet_pt_min"]))
       {
         nBJets++;
       }
 
       //Tau search
-      if ((jet->TauTag == 1) && (jet->PT > 20.0))
+      if ((jet->TauTag == 1) && (abs(jet->Eta) < 2.5) && (jet->PT > 20.0))
       {
         ntau_counter++;
         double tau_energy = calculateE(jet->Eta, jet->PT, jet->Mass);
