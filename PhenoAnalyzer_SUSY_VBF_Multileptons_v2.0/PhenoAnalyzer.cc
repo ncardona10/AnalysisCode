@@ -29,10 +29,6 @@ int main(int argc, char *argv[])
   chain.Add(argv[1]);
   ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
 
-  // output file manager
-  TFile *HistoOutputFile = new TFile(argv[2], "RECREATE");  
-  TDirectory *theDirectory[nDir];
-
   vector<string> namesDirectories = { "No_cuts",
                                       "jets_kinematics",
                                       "noBjets",
@@ -50,7 +46,12 @@ int main(int argc, char *argv[])
                                       "TriLepton_MuMuMu",
                                       "TriLepton_eee"};
 
-  int nDir = namesDirectories.size;
+  int nDir = namesDirectories.size();
+
+
+  // output file manager
+  TFile *HistoOutputFile = new TFile(argv[2], "RECREATE");  
+  TDirectory *theDirectory[nDir];
 
   // iterate through directory names and create them
   for (int i = 0; (unsigned) i < namesDirectories.size(); i++)
@@ -148,61 +149,40 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
                                 "Muon",
                                 "MissingET",
                                 "Track",
-                                "Particle"}
-  // check how to concatenate strings branch + name                             
+                                "Particle"};
+
+
+  map<string, TClonesArray*> branchDict;
+  // create a dictionary with the branches                           
   for (int i = 0; (unsigned) i < branches.size(); i++)
   {
-  TClonesArray *branchJet = treeReader->UseBranch(branches[i]);
+    TClonesArray *branch = treeReader->UseBranch(branches[i].c_str());
+    branchDict[ branches[i]] = branch;
   }
-                                   
-  /*
-  TClonesArray *branchJet = treeReader->UseBranch("Jet");
-  TClonesArray *branchElectron = treeReader->UseBranch("Electron");
-  TClonesArray *branchMuon = treeReader->UseBranch("Muon");
-  TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
-  TClonesArray *branchTrack = treeReader->UseBranch("Track");
-  TClonesArray *branchGenParticle = treeReader->UseBranch("Particle");
-  */
+
 
   MissingET *METpointer;
 
-  vector<string> TLVectorNames = { 'muTau_TLV',
-                                   'tauTau_TLV',
-                                   'muMu_TLV',
-                                   'elecTau_TLV',
-                                   'elecElec_TLV',
-                                   'muMuMu_TLV',
-                                   'elElEl_TLV'}
+  vector<string> TLVectorNames = { "muTau_TLV",
+                                   "tauTau_TLV",
+                                   "muMu_TLV",
+                                   "elecTau_TLV",
+                                   "elecElec_TLV",
+                                   "muMuMu_TLV",
+                                   "elElEl_TLV"};
 
-  // check how to put together strings (pairs + name)
+  map<string, map<unsigned int, TLorentzVector> > singleParticleTLVDict;
+  map<string, map<unsigned int, TLorentzVector> > pairParticleTLVDict;
+
+  // Create TLorentzVectors for single and paired particles
   for (int i = 0; (unsigned) i < TLVectorNames.size(); i++)
   {
-    std::map<unsigned int, TLorentzVector> muTau_TLV;
-    std::map<unsigned int, TLorentzVector> pairs_muTau_TLV;
+    map<unsigned int, TLorentzVector> single_particle_TLV;
+    map<unsigned int, TLorentzVector> pairs_particle_TLV;
+
+    singleParticleTLVDict[TLVectorNames[i]] = single_particle_TLV;
+    pairParticleTLVDict[TLVectorNames[i]] = pairs_particle_TLV;
   }
-
-  /*
-  std::map<unsigned int, TLorentzVector> muTau_TLV;
-  std::map<unsigned int, TLorentzVector> pairs_muTau_TLV;
-
-  std::map<unsigned int, TLorentzVector> tauTau_TLV;
-  std::map<unsigned int, TLorentzVector> pairs_tauTau_TLV;
-
-  std::map<unsigned int, TLorentzVector> muMu_TLV;
-  std::map<unsigned int, TLorentzVector> pairs_muMu_TLV;
-
-  std::map<unsigned int, TLorentzVector> elecTau_TLV;
-  std::map<unsigned int, TLorentzVector> pairs_elecTau_TLV;
-
-  std::map<unsigned int, TLorentzVector> elecElec_TLV;
-  std::map<unsigned int, TLorentzVector> pairs_elecElec_TLV;
- 
-  std::map<unsigned int, TLorentzVector> muMuMu_TLV;
-  std::map<unsigned int, TLorentzVector> trio_muMuMu_TLV;
-
-  std::map<unsigned int, TLorentzVector> elElEl_TLV;
-  std::map<unsigned int, TLorentzVector> trio_elElEl_TLV;
-  */
 
   cout<< "Number of entries: " << numberOfEntries << endl;
 
@@ -253,7 +233,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     bool fill_tau3 = false;
     bool fill_tau4 = false;
 
-    METpointer = (MissingET *)branchMissingET->At(0);
+    METpointer = (MissingET *)branchDict["MissingET"]->At(0);
     double MET = METpointer->MET;
     double Met_phi = METpointer->Phi;
     double tau_transmass = 0.;
@@ -267,10 +247,10 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     //////////////////Tau Channel///////////
     //Search for taus and bjets
-    for (int j = 0; j < branchJet->GetEntriesFast(); j++)
+    for (int j = 0; j < branchDict["Jet"]->GetEntriesFast(); j++)
     {
 
-      Jet *jet = (Jet *)branchJet->At(j);
+      Jet *jet = (Jet *)branchDict["Jet"]->At(j);
 
       if ((jet->BTag == 1) && (abs(jet->Eta) < 2.5) && (jet->PT > configDict["b_jet_pt_min"]))
       {
@@ -326,7 +306,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     //Check if taus overlap with muons
 
-    for (int muo = 0; muo < branchMuon->GetEntriesFast(); muo++)
+    for (int muo = 0; muo < branchDict["Muon"]->GetEntriesFast(); muo++)
     {
 
       if (tau1_muon_overlap && tau2_muon_overlap && tau3_muon_overlap && tau4_muon_overlap)
@@ -334,7 +314,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
         break;
       }
 
-      Muon *muon = (Muon *)branchMuon->At(muo);
+      Muon *muon = (Muon *)branchDict["Muon"]->At(muo);
       double muon_energy = calculateE(muon->Eta, muon->PT, 0.1056583715);
       muon_i.SetPtEtaPhiE(muon->PT, muon->Eta, muon->Phi, muon_energy);
 
@@ -417,7 +397,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     //Check if taus overlap with electrons
 
-    for (int el = 0; el < branchElectron->GetEntriesFast(); el++)
+    for (int el = 0; el < branchDict["Electron"]->GetEntriesFast(); el++)
     {
 
       if (tau1_elec_overlap && tau2_elec_overlap && tau3_elec_overlap && tau4_elec_overlap)
@@ -425,7 +405,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
         break;
       }
 
-      Electron *elec = (Electron *)branchElectron->At(el);
+      Electron *elec = (Electron *)branchDict["Electron"]->At(el);
       double elec_energy = calculateE(elec->Eta, elec->PT, 0.000510998902);
       elec_i.SetPtEtaPhiE(elec->PT, elec->Eta, elec->Phi, elec_energy);
 
@@ -504,10 +484,10 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     //Check if jets overlap with taus
     int n_jets = 0;
 
-    for (int l = 0; l < branchJet->GetEntriesFast(); l++)
+    for (int l = 0; l < branchDict["Jet"]->GetEntriesFast(); l++)
     {
 
-      Jet *jet = (Jet *)branchJet->At(l);
+      Jet *jet = (Jet *)branchDict["Jet"]->At(l);
 
       if ((jet->PT > configDict["jet_min_pt"]) && (jet->TauTag == 0) && (jet->BTag == 0))
       {
@@ -677,10 +657,10 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     bool fill_tau2_gen = false;
     bool fill_tau3_gen = false;
 
-    for (int tau_i = 0; tau_i < branchGenParticle->GetEntriesFast(); tau_i++)
+    for (int tau_i = 0; tau_i < branchDict["Particle"]->GetEntriesFast(); tau_i++)
     {
       // Look for the particle PDGID
-      GenParticle *tau_gen = (GenParticle *)branchGenParticle->At(tau_i);
+      GenParticle *tau_gen = (GenParticle *)branchDict["Particle"]->At(tau_i);
       if (abs(tau_gen->PID) == 15)
       {
         double tau_energy = calculateE(tau_gen->Eta, tau_gen->PT, tau_gen->Mass);
@@ -717,9 +697,9 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     double tau1_track_DR_min = 999.;
     double tau1_track_DR;
     //Search tau track
-    for (Int_t i = 0; i < branchTrack->GetEntriesFast(); i++)
+    for (Int_t i = 0; i < branchDict["Track"]->GetEntriesFast(); i++)
     {
-      Track *track = (Track *)branchTrack->At(i);
+      Track *track = (Track *)branchDict["Track"]->At(i);
       tau1_track_DR = calculate_deltaR(Tau1HadTLV, track);
       if (tau1_track_DR < tau1_track_DR_min)
       {
@@ -816,85 +796,85 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     st += ht + Tau1HadTLV.Pt() + Tau2HadTLV.Pt() + Tau3HadTLV.Pt() + jetLeadingVec.Pt() + jetSleadingVec.Pt() + MET;
 
-    muTau_TLV[0] = Tau1HadTLV;
-    muTau_TLV[1] = Tau2HadTLV;
-    muTau_TLV[2] = Tau3HadTLV;
-    muTau_TLV[3] = Tau4HadTLV;
-    muTau_TLV[4] = Muon1HadTLV;
-    muTau_TLV[5] = Muon2HadTLV;
-    muTau_TLV[6] = Muon3HadTLV;
-    muTau_TLV[7] = Muon4HadTLV;
+    singleParticleTLVDict["muTau_TLV"][0] = Tau1HadTLV;
+    singleParticleTLVDict["muTau_TLV"][1] = Tau2HadTLV;
+    singleParticleTLVDict["muTau_TLV"][2] = Tau3HadTLV;
+    singleParticleTLVDict["muTau_TLV"][3] = Tau4HadTLV;
+    singleParticleTLVDict["muTau_TLV"][4] = Muon1HadTLV;
+    singleParticleTLVDict["muTau_TLV"][5] = Muon2HadTLV;
+    singleParticleTLVDict["muTau_TLV"][6] = Muon3HadTLV;
+    singleParticleTLVDict["muTau_TLV"][7] = Muon4HadTLV;
 
     double muTau_mass_i = 0.;
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((muTau_TLV[i].Pt() > configDict["tau_pt_cut"]) && (abs(muTau_TLV[i].Eta()) < configDict["tau_eta_cut"]))
+      if ((singleParticleTLVDict["muTau_TLV"][i].Pt() > configDict["tau_pt_cut"]) && (abs(singleParticleTLVDict["muTau_TLV"][i].Eta()) < configDict["tau_eta_cut"]))
       {
         for (int j = 4; j < 8; j++)
         {
-          if ((muTau_TLV[j].Pt() > configDict["muon_pt_cut"]) && (abs(muTau_TLV[j].Eta() < configDict["muon_eta_cut"])))
+          if ((singleParticleTLVDict["muTau_TLV"][j].Pt() > configDict["muon_pt_cut"]) && (abs(singleParticleTLVDict["muTau_TLV"][j].Eta() < configDict["muon_eta_cut"])))
           {
-            double muTau_mass = (muTau_TLV[i] + muTau_TLV[j]).M();
+            double muTau_mass = (singleParticleTLVDict["muTau_TLV"][i] + singleParticleTLVDict["muTau_TLV"][j]).M();
             if (muTau_mass > muTau_mass_i)
             {
               muTau_mass_i = muTau_mass;
-              pairs_muTau_TLV[0] = muTau_TLV[i];
-              pairs_muTau_TLV[1] = muTau_TLV[j];
+              pairParticleTLVDict["muTau_TLV"][0] = singleParticleTLVDict["muTau_TLV"][i];
+              pairParticleTLVDict["muTau_TLV"][1] = singleParticleTLVDict["muTau_TLV"][j];
             }
           }
         }
       }
     }
 
-    muMu_TLV[0] = Muon1HadTLV;
-    muMu_TLV[1] = Muon2HadTLV;
-    muMu_TLV[2] = Muon3HadTLV;
-    muMu_TLV[3] = Muon4HadTLV;
+    singleParticleTLVDict["muMu_TLV"][0] = Muon1HadTLV;
+    singleParticleTLVDict["muMu_TLV"][1] = Muon2HadTLV;
+    singleParticleTLVDict["muMu_TLV"][2] = Muon3HadTLV;
+    singleParticleTLVDict["muMu_TLV"][3] = Muon4HadTLV;
 
     double muMu_mass_i = 0.;
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((muMu_TLV[i].Pt() > configDict["muon_pt_cut"]) && (abs(muMu_TLV[i].Eta()) < configDict["muon_eta_cut"]))
+      if ((singleParticleTLVDict["muMu_TLV"][i].Pt() > configDict["muon_pt_cut"]) && (abs(singleParticleTLVDict["muMu_TLV"][i].Eta()) < configDict["muon_eta_cut"]))
       {
         for (int j = i + 1; j < 4; j++)
         {
-          if ((muMu_TLV[j].Pt() > configDict["muon_pt_cut"]) && (abs(muMu_TLV[j].Eta()) < configDict["muon_eta_cut"]) && (i != j))
+          if ((singleParticleTLVDict["muMu_TLV"][j].Pt() > configDict["muon_pt_cut"]) && (abs(singleParticleTLVDict["muMu_TLV"][j].Eta()) < configDict["muon_eta_cut"]) && (i != j))
           {
-            double muMu_mass = (muMu_TLV[i] + muMu_TLV[j]).M();
+            double muMu_mass = (singleParticleTLVDict["muMu_TLV"][i] + singleParticleTLVDict["muMu_TLV"][j]).M();
             if (muMu_mass > muMu_mass_i)
             {
               muMu_mass_i = muMu_mass;
-              pairs_muMu_TLV[0] = muMu_TLV[i];
-              pairs_muMu_TLV[1] = muMu_TLV[j];
+              pairParticleTLVDict["muMu_TLV"][0] = singleParticleTLVDict["muMu_TLV"][i];
+              pairParticleTLVDict["muMu_TLV"][1] = singleParticleTLVDict["muMu_TLV"][j];
             }
           }
         }
       }
     }
 
-    tauTau_TLV[0] = Tau1HadTLV;
-    tauTau_TLV[1] = Tau2HadTLV;
-    tauTau_TLV[2] = Tau3HadTLV;
-    tauTau_TLV[3] = Tau4HadTLV;
+    singleParticleTLVDict["tauTau_TLV"][0] = Tau1HadTLV;
+    singleParticleTLVDict["tauTau_TLV"][1] = Tau2HadTLV;
+    singleParticleTLVDict["tauTau_TLV"][2] = Tau3HadTLV;
+    singleParticleTLVDict["tauTau_TLV"][3] = Tau4HadTLV;
 
     double tauTau_mass_i = 0.;
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((tauTau_TLV[i].Pt() > configDict["tau_pt_cut"]) && (abs(tauTau_TLV[i].Eta()) < configDict["tau_eta_cut"]))
+      if ((singleParticleTLVDict["tauTau_TLV"][i].Pt() > configDict["tau_pt_cut"]) && (abs(singleParticleTLVDict["tauTau_TLV"][i].Eta()) < configDict["tau_eta_cut"]))
       {
         for (int j = i + 1; j < 4; j++)
         {
-          if ((tauTau_TLV[j].Pt() > configDict["tau_pt_cut"]) && (abs(tauTau_TLV[j].Eta()) < configDict["tau_eta_cut"]) && (i != j))
+          if ((singleParticleTLVDict["tauTau_TLV"][j].Pt() > configDict["tau_pt_cut"]) && (abs(singleParticleTLVDict["tauTau_TLV"][j].Eta()) < configDict["tau_eta_cut"]) && (i != j))
           {
-            double tauTau_mass = (tauTau_TLV[i] + tauTau_TLV[j]).M();
+            double tauTau_mass = (singleParticleTLVDict["tauTau_TLV"][i] + singleParticleTLVDict["tauTau_TLV"][j]).M();
             if (tauTau_mass > tauTau_mass_i)
             {
               tauTau_mass_i = tauTau_mass;
-              pairs_tauTau_TLV[0] = tauTau_TLV[i];
-              pairs_tauTau_TLV[1] = tauTau_TLV[j];
+              pairParticleTLVDict["tauTau_TLV"][0] = singleParticleTLVDict["tauTau_TLV"][i];
+              pairParticleTLVDict["tauTau_TLV"][1] = singleParticleTLVDict["tauTau_TLV"][j];
             }
           }
         }
@@ -902,31 +882,31 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     }
 
     // elec - tau pairs
-    elecTau_TLV[0] = Elec1HadTLV;
-    elecTau_TLV[1] = Elec2HadTLV;
-    elecTau_TLV[2] = Elec3HadTLV;
-    elecTau_TLV[3] = Elec4HadTLV;
-    elecTau_TLV[4] = Tau1HadTLV;
-    elecTau_TLV[5] = Tau2HadTLV;
-    elecTau_TLV[6] = Tau3HadTLV;
-    elecTau_TLV[7] = Tau4HadTLV;
+    singleParticleTLVDict["elecTau_TLV"][0] = Elec1HadTLV;
+    singleParticleTLVDict["elecTau_TLV"][1] = Elec2HadTLV;
+    singleParticleTLVDict["elecTau_TLV"][2] = Elec3HadTLV;
+    singleParticleTLVDict["elecTau_TLV"][3] = Elec4HadTLV;
+    singleParticleTLVDict["elecTau_TLV"][4] = Tau1HadTLV;
+    singleParticleTLVDict["elecTau_TLV"][5] = Tau2HadTLV;
+    singleParticleTLVDict["elecTau_TLV"][6] = Tau3HadTLV;
+    singleParticleTLVDict["elecTau_TLV"][7] = Tau4HadTLV;
 
     double elecTau_mass_i = 0.;
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((elecTau_TLV[i].Pt() > configDict["elec_pt_cut"]) && (abs(elecTau_TLV[i].Eta()) < configDict["elec_eta_cut"]))
+      if ((singleParticleTLVDict["elecTau_TLV"][i].Pt() > configDict["elec_pt_cut"]) && (abs(singleParticleTLVDict["elecTau_TLV"][i].Eta()) < configDict["elec_eta_cut"]))
       {
         for (int j = 4; j < 8; j++)
         {
-          if ((elecTau_TLV[j].Pt() > configDict["tau_pt_cut"]) && (abs(elecTau_TLV[j].Eta()) < configDict["tau_eta_cut"]) && (i != j))
+          if ((singleParticleTLVDict["elecTau_TLV"][j].Pt() > configDict["tau_pt_cut"]) && (abs(singleParticleTLVDict["elecTau_TLV"][j].Eta()) < configDict["tau_eta_cut"]) && (i != j))
           {
-            double elecTau_mass = (elecTau_TLV[i] + elecTau_TLV[j]).M();
+            double elecTau_mass = (singleParticleTLVDict["elecTau_TLV"][i] + singleParticleTLVDict["elecTau_TLV"][j]).M();
             if (elecTau_mass > elecTau_mass_i)
             {
               elecTau_mass_i = elecTau_mass;
-              pairs_elecTau_TLV[0] = elecTau_TLV[i];
-              pairs_elecTau_TLV[1] = elecTau_TLV[j];
+              pairParticleTLVDict["elecTau_TLV"][0] = singleParticleTLVDict["elecTau_TLV"][i];
+              pairParticleTLVDict["elecTau_TLV"][1] = singleParticleTLVDict["elecTau_TLV"][j];
             }
           }
         }
@@ -934,27 +914,27 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     }
 
     // elec - elec pairs
-    elecElec_TLV[0] = Elec1HadTLV;
-    elecElec_TLV[1] = Elec2HadTLV;
-    elecElec_TLV[2] = Elec3HadTLV;
-    elecElec_TLV[3] = Elec4HadTLV;
+    singleParticleTLVDict["elecElec_TLV"][0] = Elec1HadTLV;
+    singleParticleTLVDict["elecElec_TLV"][1] = Elec2HadTLV;
+    singleParticleTLVDict["elecElec_TLV"][2] = Elec3HadTLV;
+    singleParticleTLVDict["elecElec_TLV"][3] = Elec4HadTLV;
 
     double elecElec_mass_i = 0.;
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((elecElec_TLV[i].Pt() > configDict["elec_pt_cut"]) && (abs(elecElec_TLV[i].Eta()) < configDict["elec_eta_cut"]))
+      if ((singleParticleTLVDict["elecElec_TLV"][i].Pt() > configDict["elec_pt_cut"]) && (abs(singleParticleTLVDict["elecElec_TLV"][i].Eta()) < configDict["elec_eta_cut"]))
       {
         for (int j = i + 1; j < 4; j++)
         {
-          if ((elecElec_TLV[j].Pt() > configDict["elec_pt_cut"]) && (abs(elecElec_TLV[j].Eta()) < configDict["elec_eta_cut"]) && (i != j))
+          if ((singleParticleTLVDict["elecElec_TLV"][j].Pt() > configDict["elec_pt_cut"]) && (abs(singleParticleTLVDict["elecElec_TLV"][j].Eta()) < configDict["elec_eta_cut"]) && (i != j))
           {
-            double elecElec_mass = (elecElec_TLV[i] + elecElec_TLV[j]).M();
+            double elecElec_mass = (singleParticleTLVDict["elecElec_TLV"][i] + singleParticleTLVDict["elecElec_TLV"][j]).M();
             if (elecElec_mass > elecElec_mass_i)
             {
               elecElec_mass_i = elecElec_mass;
-              pairs_elecElec_TLV[0] = elecElec_TLV[i];
-              pairs_elecElec_TLV[1] = elecElec_TLV[j];
+              pairParticleTLVDict["elecElec_TLV"][0] = singleParticleTLVDict["elecElec_TLV"][i];
+              pairParticleTLVDict["elecElec_TLV"][1] = singleParticleTLVDict["elecElec_TLV"][j];
             }
           }
         }
@@ -962,30 +942,30 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     }
 
     // mu-mu-mu trio
-    muMuMu_TLV[0] = Muon1HadTLV;
-    muMuMu_TLV[1] = Muon2HadTLV;
-    muMuMu_TLV[2] = Muon3HadTLV;
-    muMuMu_TLV[3] = Muon4HadTLV;
+    singleParticleTLVDict["muMuMu_TLV"][0] = Muon1HadTLV;
+    singleParticleTLVDict["muMuMu_TLV"][1] = Muon2HadTLV;
+    singleParticleTLVDict["muMuMu_TLV"][2] = Muon3HadTLV;
+    singleParticleTLVDict["muMuMu_TLV"][3] = Muon4HadTLV;
 
     double muMuMu_mass_i = 0.;
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((muMuMu_TLV[i].Pt() > configDict["muon_pt_cut"]) && (abs(muMuMu_TLV[i].Eta()) < configDict["muon_eta_cut"]))
+      if ((singleParticleTLVDict["muMuMu_TLV"][i].Pt() > configDict["muon_pt_cut"]) && (abs(singleParticleTLVDict["muMuMu_TLV"][i].Eta()) < configDict["muon_eta_cut"]))
       {
         for (int j = i + 1; j < 4; j++)
         {
-          if ((muMuMu_TLV[j].Pt() > configDict["muon_pt_cut"]) && (abs(muMuMu_TLV[j].Eta()) < configDict["muon_eta_cut"]) && (i != j))
+          if ((singleParticleTLVDict["muMuMu_TLV"][j].Pt() > configDict["muon_pt_cut"]) && (abs(singleParticleTLVDict["muMuMu_TLV"][j].Eta()) < configDict["muon_eta_cut"]) && (i != j))
           {
             for (int k = j + 1; k < 4; k++)
             {
-              double muMuMu_mass = (muMuMu_TLV[i] + muMuMu_TLV[j] + muMuMu_TLV[k]).M();
+              double muMuMu_mass = (singleParticleTLVDict["muMuMu_TLV"][i] + singleParticleTLVDict["muMuMu_TLV"][j] + singleParticleTLVDict["muMuMu_TLV"][k]).M();
               if (muMuMu_mass > muMuMu_mass_i)
               {
                 muMuMu_mass_i = muMuMu_mass;
-                trio_muMuMu_TLV[0] = muMuMu_TLV[i];
-                trio_muMuMu_TLV[1] = muMuMu_TLV[j];
-                trio_muMuMu_TLV[2] = muMuMu_TLV[k];
+                pairParticleTLVDict["muMuMu_TLV"][0] = singleParticleTLVDict["muMuMu_TLV"][i];
+                pairParticleTLVDict["muMuMu_TLV"][1] = singleParticleTLVDict["muMuMu_TLV"][j];
+                pairParticleTLVDict["muMuMu_TLV"][2] = singleParticleTLVDict["muMuMu_TLV"][k];
               }
             }
           }
@@ -994,30 +974,30 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     }
 
     // elec-elec-elec trio
-    elElEl_TLV[0] = Elec1HadTLV;
-    elElEl_TLV[1] = Elec2HadTLV;
-    elElEl_TLV[2] = Elec3HadTLV;
-    elElEl_TLV[3] = Elec4HadTLV;
+    singleParticleTLVDict["elElEL_TLV"][0] = Elec1HadTLV;
+    singleParticleTLVDict["elElEL_TLV"][1] = Elec2HadTLV;
+    singleParticleTLVDict["elElEL_TLV"][2] = Elec3HadTLV;
+    singleParticleTLVDict["elElEL_TLV"][3] = Elec4HadTLV;
 
     double elElEl_mass_i = 0.;
 
     for (Int_t i = 0; i < 4; i++)
     {
-      if ((elElEl_TLV[i].Pt() > configDict["elec_pt_cut"]) && (abs(elElEl_TLV[i].Eta()) < configDict["elec_eta_cut"]))
+      if ((singleParticleTLVDict["elElEl_TLV"][i].Pt() > configDict["elec_pt_cut"]) && (abs(singleParticleTLVDict["elElEl_TLV"][i].Eta()) < configDict["elec_eta_cut"]))
       {
         for (int j = i + 1; j < 4; j++)
         {
-          if ((elElEl_TLV[j].Pt() > configDict["elec_pt_cut"]) && (abs(elElEl_TLV[j].Eta()) < configDict["elec_eta_cut"]) && (i != j))
+          if ((singleParticleTLVDict["elElEl_TLV"][j].Pt() > configDict["elec_pt_cut"]) && (abs(singleParticleTLVDict["elElEl_TLV"][j].Eta()) < configDict["elec_eta_cut"]) && (i != j))
           {
             for (int k = j + 1; k < 4; k++)
             {
-              double elElEl_mass = (elElEl_TLV[i] + elElEl_TLV[j] + elElEl_TLV[k]).M();
+              double elElEl_mass = (singleParticleTLVDict["elElEl_TLV"][i] + singleParticleTLVDict["elElEL_TLV"][j] + singleParticleTLVDict["elElEL_TLV"][k]).M();
               if (elElEl_mass > elElEl_mass_i)
               {
                 elElEl_mass_i = elElEl_mass;
-                trio_elElEl_TLV[0] = elElEl_TLV[i];
-                trio_elElEl_TLV[1] = elElEl_TLV[j];
-                trio_elElEl_TLV[2] = elElEl_TLV[k];
+                pairParticleTLVDict["elElEl_TLV"][0] = singleParticleTLVDict["elElEL_TLV"][i];
+                pairParticleTLVDict["elElEl_TLV"][1] = singleParticleTLVDict["elElEL_TLV"][j];
+                pairParticleTLVDict["elElEl_TLV"][2] = singleParticleTLVDict["elElEL_TLV"][k];
               }
             }
           }
@@ -1075,37 +1055,37 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       pass_cuts[8] = 1;
     }
     // // muTau kinematics
-    // if ((pass_cuts[5] == 1) && (nmuon_counter == 1) && (ntau_counter == 1) && (nelec_counter == 0) && (pairs_muTau_TLV[0].Pt() > configDict["tau_pt_cut"]) && (pairs_muTau_TLV[1].Pt() > configDict["muon_pt_cut"]) && (abs(pairs_muTau_TLV[0].Eta()) < configDict["tau_eta_cut"]) && (abs(pairs_muTau_TLV[1].Eta()) < configDict["muon_eta_cut"]) && (muTau_mass_i > configDict["muTau_mass_input"]))
+    // if ((pass_cuts[5] == 1) && (nmuon_counter == 1) && (ntau_counter == 1) && (nelec_counter == 0) && (pairParticleTLVDict["muTau_TLV"][0].Pt() > configDict["tau_pt_cut"]) && (pairParticleTLVDict["muTau_TLV"][1].Pt() > configDict["muon_pt_cut"]) && (abs(pairParticleTLVDict["muTau_TLV"][0].Eta()) < configDict["tau_eta_cut"]) && (abs(pairParticleTLVDict["muTau_TLV"][1].Eta()) < configDict["muon_eta_cut"]) && (muTau_mass_i > configDict["muTau_mass_input"]))
     // {
     //   pass_cuts[9] = 1;
     // }
     // // muMu kinematics
-    // if ((pass_cuts[5] == 1) && (nmuon_counter == 2) && (ntau_counter == 0) && (nelec_counter == 0) && (pairs_muMu_TLV[0].Pt() > configDict["muon_pt_cut"]) && (pairs_muMu_TLV[1].Pt() > configDict["muon_pt_cut"]) && (abs(pairs_muMu_TLV[0].Eta()) < configDict["muon_eta_cut"]) && (abs(pairs_muMu_TLV[1].Eta()) < configDict["muon_eta_cut"]) && (muMu_mass_i > configDict["muMu_mass_input"]))
+    // if ((pass_cuts[5] == 1) && (nmuon_counter == 2) && (ntau_counter == 0) && (nelec_counter == 0) && (pairParticleTLVDict["muMu_TLV"][0].Pt() > configDict["muon_pt_cut"]) && (pairParticleTLVDict["muMu_TLV"][1].Pt() > configDict["muon_pt_cut"]) && (abs(pairParticleTLVDict["muMu_TLV"][0].Eta()) < configDict["muon_eta_cut"]) && (abs(pairParticleTLVDict["muMu_TLV"][1].Eta()) < configDict["muon_eta_cut"]) && (muMu_mass_i > configDict["muMu_mass_input"]))
     // {
     //   pass_cuts[10] = 1;
     // }
     // // tauTau kinematics
-    // if ((pass_cuts[5] == 1) && (ntau_counter == 2) && (nmuon_counter == 0) && (nelec_counter == 0) && (pairs_tauTau_TLV[0].Pt() > configDict["tau_pt_cut"]) && (pairs_tauTau_TLV[1].Pt() > configDict["tau_pt_cut"]) && (abs(pairs_tauTau_TLV[0].Eta()) < configDict["tau_eta_cut"]) && (abs(pairs_tauTau_TLV[1].Eta()) < configDict["tau_eta_cut"]) && (tauTau_mass_i > configDict["tauTau_mass_input"]))
+    // if ((pass_cuts[5] == 1) && (ntau_counter == 2) && (nmuon_counter == 0) && (nelec_counter == 0) && (pairParticleTLVDict["tauTau_TLV"][0].Pt() > configDict["tau_pt_cut"]) && (pairParticleTLVDict["tauTau_TLV"][1].Pt() > configDict["tau_pt_cut"]) && (abs(pairParticleTLVDict["tauTau_TLV"][0].Eta()) < configDict["tau_eta_cut"]) && (abs(pairParticleTLVDict["tauTau_TLV"][1].Eta()) < configDict["tau_eta_cut"]) && (tauTau_mass_i > configDict["tauTau_mass_input"]))
     // {
     //   pass_cuts[11] = 1;
     // }
     // // elecTau kinematics
-    // if ((pass_cuts[5] == 1) && (nelec_counter == 1) && (ntau_counter == 1) && (nmuon_counter == 0) && (pairs_elecTau_TLV[0].Pt() > configDict["elec_pt_cut"]) && (pairs_elecTau_TLV[1].Pt() > configDict["tau_pt_cut"]) && (abs(pairs_elecTau_TLV[0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairs_elecTau_TLV[1].Eta()) < configDict["tau_eta_cut"]) && (elecTau_mass_i > configDict["elecTau_mass_input"]))
+    // if ((pass_cuts[5] == 1) && (nelec_counter == 1) && (ntau_counter == 1) && (nmuon_counter == 0) && (pairParticleTLVDict["elecTau_TLV"][0].Pt() > configDict["elec_pt_cut"]) && (pairParticleTLVDict["elecTau_TLV"][1].Pt() > configDict["tau_pt_cut"]) && (abs(pairParticleTLVDict["elecTau_TLV"][0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairParticleTLVDict["elecTau_TLV"][1].Eta()) < configDict["tau_eta_cut"]) && (elecTau_mass_i > configDict["elecTau_mass_input"]))
     // {
     //   pass_cuts[12] = 1;
     // }
     // // elecElec kinematics
-    // if ((pass_cuts[5] == 1) && (nelec_counter == 2) && (ntau_counter == 0) && (nmuon_counter == 0) && (pairs_elecElec_TLV[0].Pt() > configDict["elec_pt_cut"]) && (pairs_elecElec_TLV[1].Pt() > configDict["elec_pt_cut"]) && (abs(pairs_elecElec_TLV[0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairs_elecElec_TLV[1].Eta()) < configDict["elec_eta_cut"]) && (elecElec_mass_i > configDict["elecElec_mass_input"]))
+    // if ((pass_cuts[5] == 1) && (nelec_counter == 2) && (ntau_counter == 0) && (nmuon_counter == 0) && (pairParticleTLVDict["elecElec_TLV"][0].Pt() > configDict["elec_pt_cut"]) && (pairParticleTLVDict["elecElec_TLV"][1].Pt() > configDict["elec_pt_cut"]) && (abs(pairParticleTLVDict["elecElec_TLV"][0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairParticleTLVDict["elecElec_TLV"][1].Eta()) < configDict["elec_eta_cut"]) && (elecElec_mass_i > configDict["elecElec_mass_input"]))
     {
       pass_cuts[13] = 1;
     }
     // muMuMu kinematics
-    if ((pass_cuts[5] == 1) && (nmuon_counter == 3) && (ntau_counter == 0) && (nelec_counter == 0) && (trio_muMuMu_TLV[0].Pt() > configDict["muon_pt_cut"]) && (trio_muMuMu_TLV[1].Pt() > configDict["muon_pt_cut"]) && (trio_muMuMu_TLV[2].Pt() > configDict["muon_pt_cut"]) && (abs(trio_muMuMu_TLV[0].Eta()) < configDict["muon_eta_cut"]) && (abs(trio_muMuMu_TLV[1].Eta()) < configDict["muon_eta_cut"]) && (abs(trio_muMuMu_TLV[2].Eta()) < configDict["muon_eta_cut"]))
+    if ((pass_cuts[5] == 1) && (nmuon_counter == 3) && (ntau_counter == 0) && (nelec_counter == 0) && (pairParticleTLVDict["muMuMu_TLV"][0].Pt() > configDict["muon_pt_cut"]) && (pairParticleTLVDict["muMuMu_TLV"][1].Pt() > configDict["muon_pt_cut"]) && (pairParticleTLVDict["muMuMu_TLV"][2].Pt() > configDict["muon_pt_cut"]) && (abs(pairParticleTLVDict["muMuMu_TLV"][0].Eta()) < configDict["muon_eta_cut"]) && (abs(pairParticleTLVDict["muMuMu_TLV"][1].Eta()) < configDict["muon_eta_cut"]) && (abs(pairParticleTLVDict["muMuMu_TLV"][2].Eta()) < configDict["muon_eta_cut"]))
     {
       pass_cuts[14] = 1;
     }
     // elElEl kinematics
-    if ((pass_cuts[5] == 1) && (nelec_counter == 3) && (ntau_counter == 0) && (nmuon_counter == 0) && (trio_elElEl_TLV[0].Pt() > configDict["elec_pt_cut"]) && (trio_elElEl_TLV[1].Pt() > configDict["elec_pt_cut"]) && (trio_elElEl_TLV[2].Pt() > configDict["elec_pt_cut"]) && (abs(trio_elElEl_TLV[0].Eta()) < configDict["elec_eta_cut"]) && (abs(trio_elElEl_TLV[1].Eta()) < configDict["elec_eta_cut"]) && (abs(trio_elElEl_TLV[2].Eta()) < configDict["elec_eta_cut"]))
+    if ((pass_cuts[5] == 1) && (nelec_counter == 3) && (ntau_counter == 0) && (nmuon_counter == 0) && (pairParticleTLVDict["elElEl_TLV"][0].Pt() > configDict["elec_pt_cut"]) && (pairParticleTLVDict["elElEl_TLV"][1].Pt() > configDict["elec_pt_cut"]) && (pairParticleTLVDict["elElEl_TLV"][2].Pt() > configDict["elec_pt_cut"]) && (abs(pairParticleTLVDict["elElEl_TLV"][0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairParticleTLVDict["elElEl_TLV"][1].Eta()) < configDict["elec_eta_cut"]) && (abs(pairParticleTLVDict["elElEl_TLV"][2].Eta()) < configDict["elec_eta_cut"]))
     {
       pass_cuts[15] = 1;
     }
