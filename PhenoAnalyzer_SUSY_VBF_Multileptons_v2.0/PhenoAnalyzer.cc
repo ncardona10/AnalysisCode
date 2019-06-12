@@ -30,8 +30,7 @@ int main(int argc, char *argv[])
   ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
 
   // output file manager
-  TFile *HistoOutputFile = new TFile(argv[2], "RECREATE");
-  int nDir = 16;
+  TFile *HistoOutputFile = new TFile(argv[2], "RECREATE");  
   TDirectory *theDirectory[nDir];
 
   vector<string> namesDirectories = { "No_cuts",
@@ -50,6 +49,8 @@ int main(int argc, char *argv[])
                                       "DiLepton_ee",
                                       "TriLepton_MuMuMu",
                                       "TriLepton_eee"};
+
+  int nDir = namesDirectories.size;
 
   // iterate through directory names and create them
   for (int i = 0; (unsigned) i < namesDirectories.size(); i++)
@@ -82,7 +83,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
   
   TEnv *params = new TEnv("config_file");
   params->ReadFile("config.in", kEnvChange);
-
+  // directories names vector
   vector<string> vectKeys = { "b_jet_pt_min",
                               "DR_jet_lep_max",
                               "jet_min_pt",
@@ -105,7 +106,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
                               "tauTau_mass_input",
                               "elecTau_mass_input",
                               "elecElec_mass_input"};
- 
+  // default values for directories
   vector<double> defaultConfigValues = {30.0,
                                         0.3,
                                         30.0,
@@ -128,7 +129,6 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
                                         10.,
                                         10.,
                                         10.};
-
   
   map<string, double> configDict;
 
@@ -136,26 +136,52 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
   {
     configDict[vectKeys[i]] = params->GetValue(vectKeys[i].c_str(), defaultConfigValues[i]);
   }
-  
 
-  
-  cout<< "Done reading config files." << endl;
-  
+  cout<< "Done reading config files." << endl;  
 
   createHistoMaps(nDir);
-
-
   
   Long64_t numberOfEntries = treeReader->GetEntries();
 
+    vector<string> branches = { "Jet",
+                                "Electron",
+                                "Muon",
+                                "MissingET",
+                                "Track",
+                                "Particle"}
+  // check how to concatenate strings branch + name                             
+  for (int i = 0; (unsigned) i < branches.size(); i++)
+  {
+  TClonesArray *branchJet = treeReader->UseBranch(branches[i]);
+  }
+                                   
+  /*
   TClonesArray *branchJet = treeReader->UseBranch("Jet");
   TClonesArray *branchElectron = treeReader->UseBranch("Electron");
   TClonesArray *branchMuon = treeReader->UseBranch("Muon");
   TClonesArray *branchMissingET = treeReader->UseBranch("MissingET");
   TClonesArray *branchTrack = treeReader->UseBranch("Track");
   TClonesArray *branchGenParticle = treeReader->UseBranch("Particle");
+  */
 
   MissingET *METpointer;
+
+  vector<string> TLVectorNames = { 'muTau_TLV',
+                                   'tauTau_TLV',
+                                   'muMu_TLV',
+                                   'elecTau_TLV',
+                                   'elecElec_TLV',
+                                   'muMuMu_TLV',
+                                   'elElEl_TLV'}
+
+  // check how to put together strings (pairs + name)
+  for (int i = 0; (unsigned) i < TLVectorNames.size(); i++)
+  {
+    std::map<unsigned int, TLorentzVector> muTau_TLV;
+    std::map<unsigned int, TLorentzVector> pairs_muTau_TLV;
+  }
+
+  /*
   std::map<unsigned int, TLorentzVector> muTau_TLV;
   std::map<unsigned int, TLorentzVector> pairs_muTau_TLV;
 
@@ -176,6 +202,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
   std::map<unsigned int, TLorentzVector> elElEl_TLV;
   std::map<unsigned int, TLorentzVector> trio_elElEl_TLV;
+  */
 
   cout<< "Number of entries: " << numberOfEntries << endl;
 
