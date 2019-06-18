@@ -2,6 +2,7 @@
 @file PhenoAnalyzer.cc
 @author Andres Florez
 @author Carlos Miguel Patino
+@author Nathalia Cardona 
 @date April 2, 2017
 
 Code used to perform phenomenological analysis of Heavy Neutrinos in the tau channel
@@ -13,8 +14,12 @@ Code used to perform phenomenological analysis of Heavy Neutrinos in the tau cha
 #include <map>
 #include <vector>
 #include <iomanip>
+#include <bits/stdc++.h> 
+
 
 using namespace std;
+
+bool compareTLVPTDescending(TLorentzVector tlv1, TLorentzVector tlv2);
 
 int main(int argc, char *argv[])
 {
@@ -200,38 +205,47 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     TLorentzVector jet_i(0., 0., 0., 0.);
     TLorentzVector elec_i(0., 0., 0., 0.);
-    TLorentzVector muon_i(0., 0., 0., 0.);
     TLorentzVector tmp_tlv(0., 0., 0., 0.); //Vector used to swap vectors
 
+
     //Tau Vectors
-    TLorentzVector Tau1HadTLV(0., 0., 0., 0.);
-    TLorentzVector Tau2HadTLV(0., 0., 0., 0.);
-    TLorentzVector Tau3HadTLV(0., 0., 0., 0.);
-    TLorentzVector Tau4HadTLV(0., 0., 0., 0.);
-
+    vector<TLorentzVector> hadronTausTLV;
+  
     //Muon Vectors
-    TLorentzVector Muon1HadTLV(0., 0., 0., 0.);
-    TLorentzVector Muon2HadTLV(0., 0., 0., 0.);
-    TLorentzVector Muon3HadTLV(0., 0., 0., 0.);
-    TLorentzVector Muon4HadTLV(0., 0., 0., 0.);
+    vector<TLorentzVector> hadronMuonsTLV;
 
-    // Electron Vectors
-    TLorentzVector Elec1HadTLV(0., 0., 0., 0.);
-    TLorentzVector Elec2HadTLV(0., 0., 0., 0.);
-    TLorentzVector Elec3HadTLV(0., 0., 0., 0.);
-    TLorentzVector Elec4HadTLV(0., 0., 0., 0.);
+    //Electron Vectors
+    vector<TLorentzVector> hadronElectronsTLV;
 
-    TLorentzVector TauHadTLV_gen(0., 0., 0., 0.);
-    TLorentzVector Tau1HadTLV_gen(0., 0., 0., 0.);
-    TLorentzVector Tau2HadTLV_gen(0., 0., 0., 0.);
-    TLorentzVector Tau3HadTLV_gen(0., 0., 0., 0.);
+    vector<TLorentzVector> hadronTausTLV_gen;
 
     vector<TLorentzVector> jetsList;
 
-    bool fill_tau1 = false;
-    bool fill_tau2 = false;
-    bool fill_tau3 = false;
-    bool fill_tau4 = false;
+    vector<bool> fill_tau;
+
+    // create and save tlvs in vectors
+    for (int i = 0; i < 4; i++)
+    {
+      // create tlvs
+      TLorentzVector hadronTauTLV(0.,0.,0.,0.);
+      TLorentzVector hadronMuonTLV(0.,0.,0.,0.);
+      TLorentzVector hadronElectronTLV(0.,0.,0.,0.);
+      TLorentzVector hadronTauTLV_gen(0.,0.,0.,0.);
+      
+      // fill the vectors
+      hadronTausTLV.push_back(hadronTauTLV);
+      hadronMuonsTLV.push_back(hadronMuonTLV);
+      hadronElectronsTLV.push_back(hadronElectronTLV);
+      hadronTausTLV_gen.push_back(hadronTauTLV_gen);
+
+      fill_tau.push_back(false);
+    }
+    
+    
+    // bool fill_tau1 = false;
+    // bool fill_tau2 = false;
+    // bool fill_tau3 = false;
+    // bool fill_tau4 = false;
 
     METpointer = (MissingET *)branchDict["MissingET"]->At(0);
     double MET = METpointer->MET;
@@ -247,6 +261,8 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     //////////////////Tau Channel///////////
     //Search for taus and bjets
+    int fillcounter = 0;
+    
     for (int j = 0; j < branchDict["Jet"]->GetEntriesFast(); j++)
     {
 
@@ -261,39 +277,18 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       if ((jet->TauTag == 1) && (abs(jet->Eta) < 2.5) && (jet->PT > 20.0))
       {
         ntau_counter++;
+
         double tau_energy = calculateE(jet->Eta, jet->PT, jet->Mass);
-        if ((fill_tau1 == false) && (fill_tau2 == false) && (fill_tau3 == false) && (fill_tau4 == false))
-        {
-          Tau1HadTLV.SetPtEtaPhiE(jet->PT, jet->Eta, jet->Phi, tau_energy);
-          fill_tau1 = true;
-          continue;
-        }
-        if ((fill_tau1 == true) && (fill_tau2 == false) && (fill_tau3 == false) && (fill_tau4 == false))
-        {
-          Tau2HadTLV.SetPtEtaPhiE(jet->PT, jet->Eta, jet->Phi, tau_energy);
-          fill_tau2 = true;
-          continue;
-        }
-        if ((fill_tau1 == true) && (fill_tau2 == true) && (fill_tau3 == false) && (fill_tau4 == false))
-        {
-          Tau3HadTLV.SetPtEtaPhiE(jet->PT, jet->Eta, jet->Phi, tau_energy);
-          fill_tau3 = true;
-          continue;
-        }
-        if ((fill_tau1 == true) && (fill_tau2 == true) && (fill_tau3 == true) && (fill_tau4 == false))
-        {
-          Tau4HadTLV.SetPtEtaPhiE(jet->PT, jet->Eta, jet->Phi, tau_energy);
-          fill_tau4 = true;
-          continue;
+
+        // question: are they the 4 taus with the biggest PT? do we want them to be the biggest?
+        if(fillcounter<4){
+          hadronTausTLV[fillcounter].SetPtEtaPhiE(jet->PT, jet->Eta, jet->Phi, tau_energy);
+          fillcounter++;
         }
       }
     }
 
-    bool tau1_muon_overlap = false;
-    bool tau2_muon_overlap = false;
-    bool tau3_muon_overlap = false;
-    bool tau4_muon_overlap = false;
-
+    
     bool tau1_elec_overlap = false;
     bool tau2_elec_overlap = false;
     bool tau3_elec_overlap = false;
@@ -306,89 +301,110 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
     //Check if taus overlap with muons
 
-    for (int muo = 0; muo < branchDict["Muon"]->GetEntriesFast(); muo++)
-    {
+    int muo = 0;
+    int numOverlaps  = 0;
+    int fillMuonCounter = 0;
+    TLorentzVector muon_i(0., 0., 0., 0.);
 
-      if (tau1_muon_overlap && tau2_muon_overlap && tau3_muon_overlap && tau4_muon_overlap)
-      {
-        break;
-      }
+    while(muo < branchDict["Muon"]->GetEntriesFast() && numOverlaps<4)
+    {
 
       Muon *muon = (Muon *)branchDict["Muon"]->At(muo);
       double muon_energy = calculateE(muon->Eta, muon->PT, 0.1056583715);
       muon_i.SetPtEtaPhiE(muon->PT, muon->Eta, muon->Phi, muon_energy);
 
-      double DR_tau1_muon = Tau1HadTLV.DeltaR(muon_i);
-      double DR_tau2_muon = Tau2HadTLV.DeltaR(muon_i);
-      double DR_tau3_muon = Tau3HadTLV.DeltaR(muon_i);
-      double DR_tau4_muon = Tau4HadTLV.DeltaR(muon_i);
-
-      if (DR_tau4_muon < configDict["DR_jet_lep_max"])
-      {
-        tau4_muon_overlap = true;
-        Tau4HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
-        ntau_counter--;
-      }
-      if (DR_tau3_muon < configDict["DR_jet_lep_max"])
-      {
-        tau3_muon_overlap = true;
-        Tau3HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
-        ntau_counter--;
-      }
-      if (DR_tau2_muon < configDict["DR_jet_lep_max"])
-      {
-        tau2_muon_overlap = true;
-        Tau2HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
-        ntau_counter--;
-      }
-      if (DR_tau1_muon < configDict["DR_jet_lep_max"])
-      {
-        tau1_muon_overlap = true;
-        Tau1HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
-        ntau_counter--;
+      for(int i = 0 ; i< 4; i++){
+        double DR_tau_muon = hadronTausTLV[i].DeltaR(muon_i);
+        if(DR_tau_muon<configDict["DR_jet_lep_max"]){
+          hadronTausTLV[i].SetPtEtaPhiE(0., 0., 0., 0.);
+          numOverlaps++;
+          ntau_counter--;
+        }
       }
 
+        // fill muons
       if ((muon->PT > 8.0) && (abs(muon->Eta) < 2.5))
       {
-        if ((fill_muon1 == false) && (fill_muon2 == false) && (fill_muon3 == false) && (fill_muon4 == false))
-        {
-          Muon1HadTLV = muon_i;
-          fill_muon1 = true;
-          nmuon_counter++;
-          continue;
-        }
-        if ((fill_muon1 == true) && (fill_muon2 == false) && (fill_muon3 == false) && (fill_muon4 == false))
-        {
-          if (muon_i.DeltaR(Muon1HadTLV) > 0.3)
-          {
-            Muon2HadTLV = muon_i;
-            fill_muon2 = true;
+        for(int i = 0 ; i<4; i++){
+          // cout<<i << ", " << fillMuonCounter << endl;
+
+
+          if(fillMuonCounter==0){
+            hadronMuonsTLV[fillMuonCounter] = muon_i;
             nmuon_counter++;
-            continue;
+            fillMuonCounter++;
           }
-        }
-        if ((fill_muon1 == true) && (fill_muon2 == true) && (fill_muon3 == false) && (fill_muon4 == false))
-        {
-          if ((muon_i.DeltaR(Muon2HadTLV) > 0.3) && (muon_i.DeltaR(Muon1HadTLV) > 0.3))
-          {
-            Muon3HadTLV = muon_i;
-            fill_muon3 = true;
-            nmuon_counter++;
-            continue;
+          else if(fillMuonCounter==1){
+            if (muon_i.DeltaR(hadronMuonsTLV[0]) > 0.3){
+              hadronMuonsTLV[fillMuonCounter] = muon_i;
+              nmuon_counter++;
+              fillMuonCounter++;
+            }
           }
-        }
-        if ((fill_muon1 == true) && (fill_muon2 == true) && (fill_muon3 == true) && (fill_muon4 == false))
-        {
-          if ((muon_i.DeltaR(Muon2HadTLV) > 0.3) && (muon_i.DeltaR(Muon1HadTLV) > 0.3) && (muon_i.DeltaR(Muon3HadTLV) > 0.3))
-          {
-            Muon4HadTLV = muon_i;
-            fill_muon4 = true;
-            nmuon_counter++;
-            continue;
+          else if(fillMuonCounter==2){
+            if ((muon_i.DeltaR(hadronMuonsTLV[1]) > 0.3) && (muon_i.DeltaR(hadronMuonsTLV[0]) > 0.3)){
+              hadronMuonsTLV[fillMuonCounter] = muon_i;
+              nmuon_counter++;
+              fillMuonCounter++;
+            }
           }
+          else if(fillMuonCounter==3){
+            if ((muon_i.DeltaR(hadronMuonsTLV[1]) > 0.3) && (muon_i.DeltaR(hadronMuonsTLV[0]) > 0.3) && (muon_i.DeltaR(hadronMuonsTLV[2]) > 0.3)){
+              hadronMuonsTLV[fillMuonCounter] = muon_i;
+              nmuon_counter++;
+              fillMuonCounter++;
+            }
+          }
+
+          
+
         }
+
+       
+
+        // if ((fill_muon1 == false) && (fill_muon2 == false) && (fill_muon3 == false) && (fill_muon4 == false))
+        // {
+        //   hadronMuonsTLV[0] = muon_i;
+        //   fill_muon1 = true;
+        //   nmuon_counter++;
+        //   continue;
+        // }
+        // if ((fill_muon1 == true) && (fill_muon2 == false) && (fill_muon3 == false) && (fill_muon4 == false))
+        // {
+        //   if (muon_i.DeltaR(hadronMuonsTLV[0]) > 0.3)
+        //   {
+        //     hadronMuonsTLV[1] = muon_i;
+        //     fill_muon2 = true;
+        //     nmuon_counter++;
+        //     continue;
+        //   }
+        // }
+        // if ((fill_muon1 == true) && (fill_muon2 == true) && (fill_muon3 == false) && (fill_muon4 == false))
+        // {
+        //   if ((muon_i.DeltaR(hadronMuonsTLV[1]) > 0.3) && (muon_i.DeltaR(hadronMuonsTLV[0]) > 0.3))
+        //   {
+        //     hadronMuonsTLV[2] = muon_i;
+        //     fill_muon3 = true;
+        //     nmuon_counter++;
+        //     continue;
+        //   }
+        // }
+        // if ((fill_muon1 == true) && (fill_muon2 == true) && (fill_muon3 == true) && (fill_muon4 == false))
+        // {
+        //   if ((muon_i.DeltaR(hadronMuonsTLV[1]) > 0.3) && (muon_i.DeltaR(hadronMuonsTLV[0]) > 0.3) && (muon_i.DeltaR(hadronMuonsTLV[2]) > 0.3))
+        //   {
+        //     hadronMuonsTLV[3] = muon_i;
+        //     fill_muon4 = true;
+        //     nmuon_counter++;
+        //     continue;
+        //   }
+        // }
       }
+
+
+      muo++;
     }
+
 
     bool fill_elec1 = false;
     bool fill_elec2 = false;
@@ -409,33 +425,33 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       double elec_energy = calculateE(elec->Eta, elec->PT, 0.000510998902);
       elec_i.SetPtEtaPhiE(elec->PT, elec->Eta, elec->Phi, elec_energy);
 
-      double DR_tau1_elec = Tau1HadTLV.DeltaR(elec_i);
-      double DR_tau2_elec = Tau2HadTLV.DeltaR(elec_i);
-      double DR_tau3_elec = Tau3HadTLV.DeltaR(elec_i);
-      double DR_tau4_elec = Tau4HadTLV.DeltaR(elec_i);
+      double DR_tau1_elec = hadronTausTLV[0].DeltaR(elec_i);
+      double DR_tau2_elec = hadronTausTLV[1].DeltaR(elec_i);
+      double DR_tau3_elec = hadronTausTLV[2].DeltaR(elec_i);
+      double DR_tau4_elec = hadronTausTLV[3].DeltaR(elec_i);
 
       if (DR_tau4_elec < configDict["DR_jet_lep_max"])
       {
         tau4_elec_overlap = true;
-        Tau4HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+        hadronTausTLV[3].SetPtEtaPhiE(0., 0., 0., 0.);
         ntau_counter--;
       }
       if (DR_tau3_elec < configDict["DR_jet_lep_max"])
       {
         tau3_elec_overlap = true;
-        Tau3HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+        hadronTausTLV[2].SetPtEtaPhiE(0., 0., 0., 0.);
         ntau_counter--;
       }
       if (DR_tau2_elec < configDict["DR_jet_lep_max"])
       {
         tau2_elec_overlap = true;
-        Tau2HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+        hadronTausTLV[1].SetPtEtaPhiE(0., 0., 0., 0.);
         ntau_counter--;
       }
       if (DR_tau1_elec < configDict["DR_jet_lep_max"])
       {
         tau1_elec_overlap = true;
-        Tau1HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+        hadronTausTLV[0].SetPtEtaPhiE(0., 0., 0., 0.);
         ntau_counter--;
       }
 
@@ -443,16 +459,16 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       {
         if ((fill_elec1 == false) && (fill_elec2 == false) && (fill_elec3 == false) && (fill_elec4 == false))
         {
-          Elec1HadTLV = elec_i;
+          hadronElectronsTLV[0] = elec_i;
           fill_elec1 = true;
           nelec_counter++;
           continue;
         }
         if ((fill_elec1 == true) && (fill_elec2 == false) && (fill_elec3 == false) && (fill_elec4 == false))
         {
-          if (elec_i.DeltaR(Elec1HadTLV) > 0.3)
+          if (elec_i.DeltaR(hadronElectronsTLV[0]) > 0.3)
           {
-            Elec2HadTLV = elec_i;
+            hadronElectronsTLV[1] = elec_i;
             fill_elec2 = true;
             nelec_counter++;
             continue;
@@ -460,9 +476,9 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
         }
         if ((fill_elec1 == true) && (fill_elec2 == true) && (fill_elec3 == false) && (fill_elec4 == false))
         {
-          if ((elec_i.DeltaR(Elec2HadTLV) > 0.3) && (elec_i.DeltaR(Elec1HadTLV) > 0.3))
+          if ((elec_i.DeltaR(hadronElectronsTLV[1]) > 0.3) && (elec_i.DeltaR(hadronElectronsTLV[0]) > 0.3))
           {
-            Elec3HadTLV = elec_i;
+            hadronElectronsTLV[2] = elec_i;
             fill_elec3 = true;
             nelec_counter++;
             continue;
@@ -470,9 +486,9 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
         }
         if ((fill_elec1 == true) && (fill_elec2 == true) && (fill_elec3 == true) && (fill_elec4 == false))
         {
-          if ((elec_i.DeltaR(Elec3HadTLV) > 0.3) && (elec_i.DeltaR(Elec2HadTLV) > 0.3) && (elec_i.DeltaR(Elec1HadTLV) > 0.3))
+          if ((elec_i.DeltaR(hadronElectronsTLV[2]) > 0.3) && (elec_i.DeltaR(hadronElectronsTLV[1]) > 0.3) && (elec_i.DeltaR(hadronElectronsTLV[0]) > 0.3))
           {
-            Elec4HadTLV = elec_i;
+            hadronElectronsTLV[3] = elec_i;
             fill_elec4 = true;
             nelec_counter++;
             continue;
@@ -495,83 +511,83 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
         double jet_i_energy = calculateE(jet->Eta, jet->PT, jet->Mass);
         jet_i.SetPtEtaPhiE(jet->PT, jet->Eta, jet->Phi, jet_i_energy);
 
-        double DR_tau1_jet = Tau1HadTLV.DeltaR(jet_i);
-        double DR_tau2_jet = Tau2HadTLV.DeltaR(jet_i);
-        double DR_tau3_jet = Tau3HadTLV.DeltaR(jet_i);
-        double DR_tau4_jet = Tau4HadTLV.DeltaR(jet_i);
+        double DR_tau1_jet = hadronTausTLV[0].DeltaR(jet_i);
+        double DR_tau2_jet = hadronTausTLV[1].DeltaR(jet_i);
+        double DR_tau3_jet = hadronTausTLV[2].DeltaR(jet_i);
+        double DR_tau4_jet = hadronTausTLV[3].DeltaR(jet_i);
 
-        double DR_muon1_jet = Muon1HadTLV.DeltaR(jet_i);
-        double DR_muon2_jet = Muon2HadTLV.DeltaR(jet_i);
-        double DR_muon3_jet = Muon3HadTLV.DeltaR(jet_i);
-        double DR_muon4_jet = Muon4HadTLV.DeltaR(jet_i);
+        double DR_muon1_jet = hadronMuonsTLV[0].DeltaR(jet_i);
+        double DR_muon2_jet = hadronMuonsTLV[1].DeltaR(jet_i);
+        double DR_muon3_jet = hadronMuonsTLV[2].DeltaR(jet_i);
+        double DR_muon4_jet = hadronMuonsTLV[3].DeltaR(jet_i);
 
-        double DR_elec1_jet = Elec1HadTLV.DeltaR(jet_i);
-        double DR_elec2_jet = Elec2HadTLV.DeltaR(jet_i);
-        double DR_elec3_jet = Elec3HadTLV.DeltaR(jet_i);
-        double DR_elec4_jet = Elec4HadTLV.DeltaR(jet_i);
+        double DR_elec1_jet = hadronElectronsTLV[0].DeltaR(jet_i);
+        double DR_elec2_jet = hadronElectronsTLV[1].DeltaR(jet_i);
+        double DR_elec3_jet = hadronElectronsTLV[2].DeltaR(jet_i);
+        double DR_elec4_jet = hadronElectronsTLV[3].DeltaR(jet_i);
 
         if (DR_tau1_jet < configDict["DR_jet_lep_max"])
         {
-          Tau1HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronTausTLV[0].SetPtEtaPhiE(0., 0., 0., 0.);
           ntau_counter--;
         }
         if (DR_tau2_jet < configDict["DR_jet_lep_max"])
         {
-          Tau2HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronTausTLV[1].SetPtEtaPhiE(0., 0., 0., 0.);
           ntau_counter--;
         }
         if (DR_tau3_jet < configDict["DR_jet_lep_max"])
         {
-          Tau3HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronTausTLV[2].SetPtEtaPhiE(0., 0., 0., 0.);
           ntau_counter--;
         }
         if (DR_tau4_jet < configDict["DR_jet_lep_max"])
         {
-          Tau4HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronTausTLV[3].SetPtEtaPhiE(0., 0., 0., 0.);
           ntau_counter--;
         }
 
         // remove overlaps of jets with muons
         if (DR_muon1_jet < configDict["DR_jet_lep_max"])
         {
-          Muon1HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronMuonsTLV[0].SetPtEtaPhiE(0., 0., 0., 0.);
           nmuon_counter--;
         }
         if (DR_muon2_jet < configDict["DR_jet_lep_max"])
         {
-          Muon2HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronMuonsTLV[1].SetPtEtaPhiE(0., 0., 0., 0.);
           nmuon_counter--;
         }
         if (DR_muon3_jet < configDict["DR_jet_lep_max"])
         {
-          Muon3HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronMuonsTLV[2].SetPtEtaPhiE(0., 0., 0., 0.);
           nmuon_counter--;
         }
         if (DR_muon4_jet < configDict["DR_jet_lep_max"])
         {
-          Muon4HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronMuonsTLV[3].SetPtEtaPhiE(0., 0., 0., 0.);
           nmuon_counter--;
         }
 
         // remove overlaps of jets with electrons
         if (DR_elec1_jet < configDict["DR_jet_lep_max"])
         {
-          Elec1HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronElectronsTLV[0].SetPtEtaPhiE(0., 0., 0., 0.);
           nelec_counter--;
         }
         if (DR_elec2_jet < configDict["DR_jet_lep_max"])
         {
-          Elec2HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronElectronsTLV[1].SetPtEtaPhiE(0., 0., 0., 0.);
           nelec_counter--;
         }
         if (DR_elec3_jet < configDict["DR_jet_lep_max"])
         {
-          Elec3HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronElectronsTLV[2].SetPtEtaPhiE(0., 0., 0., 0.);
           nelec_counter--;
         }
         if (DR_elec4_jet < configDict["DR_jet_lep_max"])
         {
-          Elec4HadTLV.SetPtEtaPhiE(0., 0., 0., 0.);
+          hadronElectronsTLV[3].SetPtEtaPhiE(0., 0., 0., 0.);
           nelec_counter--;
         }
 
@@ -583,74 +599,14 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       }
     }
 
-    //Order taus by pt
-    for (int pt_order = 0; pt_order < 4; pt_order++)
-    {
-      if (Tau3HadTLV.Pt() < Tau4HadTLV.Pt())
-      {
-        tmp_tlv = Tau3HadTLV;
-        Tau3HadTLV = Tau4HadTLV;
-        Tau4HadTLV = tmp_tlv;
-      }
-      if (Tau2HadTLV.Pt() < Tau3HadTLV.Pt())
-      {
-        tmp_tlv = Tau2HadTLV;
-        Tau2HadTLV = Tau3HadTLV;
-        Tau3HadTLV = tmp_tlv;
-      }
-      if (Tau1HadTLV.Pt() < Tau2HadTLV.Pt())
-      {
-        tmp_tlv = Tau1HadTLV;
-        Tau1HadTLV = Tau2HadTLV;
-        Tau2HadTLV = tmp_tlv;
-      }
-    }
+    //Order taus by pt - descending order
+    sort(hadronTausTLV.begin(), hadronTausTLV.end(), compareTLVPTDescending); 
 
-    //Order muons by pt
-    for (int pt_order = 0; pt_order < 4; pt_order++)
-    {
-      if (Muon3HadTLV.Pt() < Muon4HadTLV.Pt())
-      {
-        tmp_tlv = Muon3HadTLV;
-        Muon3HadTLV = Muon4HadTLV;
-        Muon4HadTLV = tmp_tlv;
-      }
-      if (Muon2HadTLV.Pt() < Muon3HadTLV.Pt())
-      {
-        tmp_tlv = Muon2HadTLV;
-        Muon2HadTLV = Muon3HadTLV;
-        Muon3HadTLV = tmp_tlv;
-      }
-      if (Muon1HadTLV.Pt() < Muon2HadTLV.Pt())
-      {
-        tmp_tlv = Muon1HadTLV;
-        Muon1HadTLV = Muon2HadTLV;
-        Muon2HadTLV = tmp_tlv;
-      }
-    }
+    //Order muons by pt- descending order
+    sort(hadronMuonsTLV.begin(), hadronMuonsTLV.end(), compareTLVPTDescending); 
 
-    //Order electrons by pt
-    for (int pt_order = 0; pt_order < 4; pt_order++)
-    {
-      if (Elec3HadTLV.Pt() < Elec4HadTLV.Pt())
-      {
-        tmp_tlv = Elec3HadTLV;
-        Elec3HadTLV = Elec4HadTLV;
-        Elec4HadTLV = tmp_tlv;
-      }
-      if (Elec2HadTLV.Pt() < Elec3HadTLV.Pt())
-      {
-        tmp_tlv = Elec2HadTLV;
-        Elec2HadTLV = Elec3HadTLV;
-        Elec3HadTLV = tmp_tlv;
-      }
-      if (Elec1HadTLV.Pt() < Elec2HadTLV.Pt())
-      {
-        tmp_tlv = Elec1HadTLV;
-        Elec1HadTLV = Elec2HadTLV;
-        Elec2HadTLV = tmp_tlv;
-      }
-    }
+    //Order electrons by pt- descending order
+    sort(hadronElectronsTLV.begin(), hadronElectronsTLV.end(), compareTLVPTDescending); 
 
     // GEN INFO
     bool fill_tau1_gen = false;
@@ -664,29 +620,29 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       if (abs(tau_gen->PID) == 15)
       {
         double tau_energy = calculateE(tau_gen->Eta, tau_gen->PT, tau_gen->Mass);
-        TauHadTLV_gen.SetPtEtaPhiE(tau_gen->PT, tau_gen->Eta, tau_gen->Phi, tau_energy);
+        hadronTausTLV_gen[0].SetPtEtaPhiE(tau_gen->PT, tau_gen->Eta, tau_gen->Phi, tau_energy);
         if (fill_tau1_gen == false)
         {
-          Tau1HadTLV_gen = TauHadTLV_gen;
+          hadronTausTLV_gen[1] = hadronTausTLV_gen[0];
           fill_tau1_gen = true;
           continue;
         }
         if ((fill_tau1_gen == true) && (fill_tau2_gen == false))
         {
-          double delta_R_gen1 = Tau1HadTLV_gen.DeltaR(TauHadTLV_gen);
+          double delta_R_gen1 = hadronTausTLV_gen[1].DeltaR(hadronTausTLV_gen[0]);
           if (delta_R_gen1 > 0.3)
           {
-            Tau2HadTLV_gen = TauHadTLV_gen;
+            hadronTausTLV_gen[2] = hadronTausTLV_gen[0];
             fill_tau2_gen = true;
           }
           continue;
         }
         if ((fill_tau2_gen == true) && (fill_tau3_gen == false))
         {
-          double delta_R_gen2 = Tau2HadTLV_gen.DeltaR(TauHadTLV_gen);
+          double delta_R_gen2 = hadronTausTLV_gen[2].DeltaR(hadronTausTLV_gen[0]);
           if (delta_R_gen2 > 0.3)
           {
-            Tau3HadTLV_gen = TauHadTLV_gen;
+            hadronTausTLV_gen[3] = hadronTausTLV_gen[0];
             fill_tau3_gen = true;
           }
           continue;
@@ -700,7 +656,7 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     for (Int_t i = 0; i < branchDict["Track"]->GetEntriesFast(); i++)
     {
       Track *track = (Track *)branchDict["Track"]->At(i);
-      tau1_track_DR = calculate_deltaR(Tau1HadTLV, track);
+      tau1_track_DR = calculate_deltaR(hadronTausTLV[0], track);
       if (tau1_track_DR < tau1_track_DR_min)
       {
         tau1_track_DR_min = tau1_track_DR;
@@ -781,10 +737,10 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     }
 
     double delta_eta_diJet = abs(jetLeadingVec.Eta() - jetSleadingVec.Eta());
-    double tauMass = (Tau1HadTLV + Tau2HadTLV).M();
-    tau_transmass = TMath::Sqrt(TMath::Abs(2 * Tau1HadTLV.Pt() * MET * (1 - TMath::Cos(normalizedDphi(Tau1HadTLV.Phi() - Met_phi)))));
-    muon_transmass = TMath::Sqrt(TMath::Abs(2 * Muon1HadTLV.Pt() * MET * (1 - TMath::Cos(normalizedDphi(Muon1HadTLV.Phi() - Met_phi)))));
-    elec_transmass = TMath::Sqrt(TMath::Abs(2 * Elec1HadTLV.Pt() * MET * (1 - TMath::Cos(normalizedDphi(Elec1HadTLV.Phi() - Met_phi)))));
+    double tauMass = (hadronTausTLV[0] + hadronTausTLV[1]).M();
+    tau_transmass = TMath::Sqrt(TMath::Abs(2 * hadronTausTLV[0].Pt() * MET * (1 - TMath::Cos(normalizedDphi(hadronTausTLV[0].Phi() - Met_phi)))));
+    muon_transmass = TMath::Sqrt(TMath::Abs(2 * hadronMuonsTLV[0].Pt() * MET * (1 - TMath::Cos(normalizedDphi(hadronMuonsTLV[0].Phi() - Met_phi)))));
+    elec_transmass = TMath::Sqrt(TMath::Abs(2 * hadronElectronsTLV[0].Pt() * MET * (1 - TMath::Cos(normalizedDphi(hadronElectronsTLV[0].Phi() - Met_phi)))));
     double ht = 0.;
     double st = 0.;
 
@@ -794,16 +750,16 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       ht += jetsList[i].Pt();
     }
 
-    st += ht + Tau1HadTLV.Pt() + Tau2HadTLV.Pt() + Tau3HadTLV.Pt() + jetLeadingVec.Pt() + jetSleadingVec.Pt() + MET;
+    st += ht + hadronTausTLV[0].Pt() + hadronTausTLV[1].Pt() + hadronTausTLV[2].Pt() + jetLeadingVec.Pt() + jetSleadingVec.Pt() + MET;
 
-    singleParticleTLVDict["muTau_TLV"][0] = Tau1HadTLV;
-    singleParticleTLVDict["muTau_TLV"][1] = Tau2HadTLV;
-    singleParticleTLVDict["muTau_TLV"][2] = Tau3HadTLV;
-    singleParticleTLVDict["muTau_TLV"][3] = Tau4HadTLV;
-    singleParticleTLVDict["muTau_TLV"][4] = Muon1HadTLV;
-    singleParticleTLVDict["muTau_TLV"][5] = Muon2HadTLV;
-    singleParticleTLVDict["muTau_TLV"][6] = Muon3HadTLV;
-    singleParticleTLVDict["muTau_TLV"][7] = Muon4HadTLV;
+    singleParticleTLVDict["muTau_TLV"][0] = hadronTausTLV[0];
+    singleParticleTLVDict["muTau_TLV"][1] = hadronTausTLV[1];
+    singleParticleTLVDict["muTau_TLV"][2] = hadronTausTLV[2];
+    singleParticleTLVDict["muTau_TLV"][3] = hadronTausTLV[3];
+    singleParticleTLVDict["muTau_TLV"][4] = hadronMuonsTLV[0];
+    singleParticleTLVDict["muTau_TLV"][5] = hadronMuonsTLV[1];
+    singleParticleTLVDict["muTau_TLV"][6] = hadronMuonsTLV[2];
+    singleParticleTLVDict["muTau_TLV"][7] = hadronMuonsTLV[3];
 
     double muTau_mass_i = 0.;
 
@@ -827,10 +783,10 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       }
     }
 
-    singleParticleTLVDict["muMu_TLV"][0] = Muon1HadTLV;
-    singleParticleTLVDict["muMu_TLV"][1] = Muon2HadTLV;
-    singleParticleTLVDict["muMu_TLV"][2] = Muon3HadTLV;
-    singleParticleTLVDict["muMu_TLV"][3] = Muon4HadTLV;
+    singleParticleTLVDict["muMu_TLV"][0] = hadronMuonsTLV[0];
+    singleParticleTLVDict["muMu_TLV"][1] = hadronMuonsTLV[1];
+    singleParticleTLVDict["muMu_TLV"][2] = hadronMuonsTLV[2];
+    singleParticleTLVDict["muMu_TLV"][3] = hadronMuonsTLV[3];
 
     double muMu_mass_i = 0.;
 
@@ -854,10 +810,10 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       }
     }
 
-    singleParticleTLVDict["tauTau_TLV"][0] = Tau1HadTLV;
-    singleParticleTLVDict["tauTau_TLV"][1] = Tau2HadTLV;
-    singleParticleTLVDict["tauTau_TLV"][2] = Tau3HadTLV;
-    singleParticleTLVDict["tauTau_TLV"][3] = Tau4HadTLV;
+    singleParticleTLVDict["tauTau_TLV"][0] = hadronTausTLV[0];
+    singleParticleTLVDict["tauTau_TLV"][1] = hadronTausTLV[1];
+    singleParticleTLVDict["tauTau_TLV"][2] = hadronTausTLV[2];
+    singleParticleTLVDict["tauTau_TLV"][3] = hadronTausTLV[3];
 
     double tauTau_mass_i = 0.;
 
@@ -882,14 +838,14 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     }
 
     // elec - tau pairs
-    singleParticleTLVDict["elecTau_TLV"][0] = Elec1HadTLV;
-    singleParticleTLVDict["elecTau_TLV"][1] = Elec2HadTLV;
-    singleParticleTLVDict["elecTau_TLV"][2] = Elec3HadTLV;
-    singleParticleTLVDict["elecTau_TLV"][3] = Elec4HadTLV;
-    singleParticleTLVDict["elecTau_TLV"][4] = Tau1HadTLV;
-    singleParticleTLVDict["elecTau_TLV"][5] = Tau2HadTLV;
-    singleParticleTLVDict["elecTau_TLV"][6] = Tau3HadTLV;
-    singleParticleTLVDict["elecTau_TLV"][7] = Tau4HadTLV;
+    singleParticleTLVDict["elecTau_TLV"][0] = hadronElectronsTLV[0];
+    singleParticleTLVDict["elecTau_TLV"][1] = hadronElectronsTLV[1];
+    singleParticleTLVDict["elecTau_TLV"][2] = hadronElectronsTLV[2];
+    singleParticleTLVDict["elecTau_TLV"][3] = hadronElectronsTLV[3];
+    singleParticleTLVDict["elecTau_TLV"][4] = hadronTausTLV[0];
+    singleParticleTLVDict["elecTau_TLV"][5] = hadronTausTLV[1];
+    singleParticleTLVDict["elecTau_TLV"][6] = hadronTausTLV[2];
+    singleParticleTLVDict["elecTau_TLV"][7] = hadronTausTLV[3];
 
     double elecTau_mass_i = 0.;
 
@@ -914,10 +870,10 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     }
 
     // elec - elec pairs
-    singleParticleTLVDict["elecElec_TLV"][0] = Elec1HadTLV;
-    singleParticleTLVDict["elecElec_TLV"][1] = Elec2HadTLV;
-    singleParticleTLVDict["elecElec_TLV"][2] = Elec3HadTLV;
-    singleParticleTLVDict["elecElec_TLV"][3] = Elec4HadTLV;
+    singleParticleTLVDict["elecElec_TLV"][0] = hadronElectronsTLV[0];
+    singleParticleTLVDict["elecElec_TLV"][1] = hadronElectronsTLV[1];
+    singleParticleTLVDict["elecElec_TLV"][2] = hadronElectronsTLV[2];
+    singleParticleTLVDict["elecElec_TLV"][3] = hadronElectronsTLV[3];
 
     double elecElec_mass_i = 0.;
 
@@ -942,10 +898,10 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     }
 
     // mu-mu-mu trio
-    singleParticleTLVDict["muMuMu_TLV"][0] = Muon1HadTLV;
-    singleParticleTLVDict["muMuMu_TLV"][1] = Muon2HadTLV;
-    singleParticleTLVDict["muMuMu_TLV"][2] = Muon3HadTLV;
-    singleParticleTLVDict["muMuMu_TLV"][3] = Muon4HadTLV;
+    singleParticleTLVDict["muMuMu_TLV"][0] = hadronMuonsTLV[0];
+    singleParticleTLVDict["muMuMu_TLV"][1] = hadronMuonsTLV[1];
+    singleParticleTLVDict["muMuMu_TLV"][2] = hadronMuonsTLV[2];
+    singleParticleTLVDict["muMuMu_TLV"][3] = hadronMuonsTLV[3];
 
     double muMuMu_mass_i = 0.;
 
@@ -974,10 +930,10 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     }
 
     // elec-elec-elec trio
-    singleParticleTLVDict["elElEL_TLV"][0] = Elec1HadTLV;
-    singleParticleTLVDict["elElEL_TLV"][1] = Elec2HadTLV;
-    singleParticleTLVDict["elElEL_TLV"][2] = Elec3HadTLV;
-    singleParticleTLVDict["elElEL_TLV"][3] = Elec4HadTLV;
+    singleParticleTLVDict["elElEL_TLV"][0] = hadronElectronsTLV[0];
+    singleParticleTLVDict["elElEL_TLV"][1] = hadronElectronsTLV[1];
+    singleParticleTLVDict["elElEL_TLV"][2] = hadronElectronsTLV[2];
+    singleParticleTLVDict["elElEL_TLV"][3] = hadronElectronsTLV[3];
 
     double elElEl_mass_i = 0.;
 
@@ -1039,18 +995,18 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
       pass_cuts[5] = 1;
     }
     // Events with 1 tau with kinematic cuts
-    if ((pass_cuts[5] == 1) && (ntau_counter == 1) && (nmuon_counter == 0) && (nelec_counter == 0) && (Tau1HadTLV.Pt() > configDict["tau_pt_cut"]) && (Tau1HadTLV.Pt() < configDict["tau_pt_cut_max"
-]) && (abs(Tau1HadTLV.Eta()) < configDict["tau_eta_cut"]))
+    if ((pass_cuts[5] == 1) && (ntau_counter == 1) && (nmuon_counter == 0) && (nelec_counter == 0) && (hadronTausTLV[0].Pt() > configDict["tau_pt_cut"]) && (hadronTausTLV[0].Pt() < configDict["tau_pt_cut_max"
+]) && (abs(hadronTausTLV[0].Eta()) < configDict["tau_eta_cut"]))
     {
       pass_cuts[6] = 1;
     }
     // Events with 1 muon  with kinematic cuts
-    if ((pass_cuts[5] == 1) && (nmuon_counter == 1) && (ntau_counter == 0) && (nelec_counter == 0) && (Muon1HadTLV.Pt() > configDict["muon_pt_cut"]) && (Muon1HadTLV.Pt() < configDict["muon_pt_cut_max"]) && (abs(Muon1HadTLV.Eta()) < configDict["muon_eta_cut"]))
+    if ((pass_cuts[5] == 1) && (nmuon_counter == 1) && (ntau_counter == 0) && (nelec_counter == 0) && (hadronMuonsTLV[0].Pt() > configDict["muon_pt_cut"]) && (hadronMuonsTLV[0].Pt() < configDict["muon_pt_cut_max"]) && (abs(hadronMuonsTLV[0].Eta()) < configDict["muon_eta_cut"]))
     {
       pass_cuts[7] = 1;
     }
     // Events with 1 electron with kinematic cuts
-    if ((pass_cuts[5] == 1) && (nelec_counter == 1) && (ntau_counter == 0) && (nmuon_counter == 0) && (Elec1HadTLV.Pt() > configDict["elec_pt_cut"]) && (Elec1HadTLV.Pt() < configDict["elec_pt_cut_max"]) && (abs(Elec1HadTLV.Eta()) < configDict["elec_eta_cut"]))
+    if ((pass_cuts[5] == 1) && (nelec_counter == 1) && (ntau_counter == 0) && (nmuon_counter == 0) && (hadronElectronsTLV[0].Pt() > configDict["elec_pt_cut"]) && (hadronElectronsTLV[0].Pt() < configDict["elec_pt_cut_max"]) && (abs(hadronElectronsTLV[0].Eta()) < configDict["elec_eta_cut"]))
     {
       pass_cuts[8] = 1;
     }
@@ -1112,42 +1068,42 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
           _hmap_slead_jet_eta[i]->Fill(jetSleadingVec.Eta());
           _hmap_slead_jet_phi[i]->Fill(jetSleadingVec.Phi());
         }
-        if (Tau1HadTLV.Pt() > 1.0)
+        if (hadronTausTLV[0].Pt() > 1.0)
         {
-          _hmap_tau1_pT[i]->Fill(Tau1HadTLV.Pt());
-          _hmap_tau1_eta[i]->Fill(Tau1HadTLV.Eta());
-          _hmap_tau1_phi[i]->Fill(Tau1HadTLV.Phi());
+          _hmap_tau1_pT[i]->Fill(hadronTausTLV[0].Pt());
+          _hmap_tau1_eta[i]->Fill(hadronTausTLV[0].Eta());
+          _hmap_tau1_phi[i]->Fill(hadronTausTLV[0].Phi());
         }
-        if (Tau2HadTLV.Pt() > 1.0)
+        if (hadronTausTLV[1].Pt() > 1.0)
         {
-          _hmap_tau2_pT[i]->Fill(Tau2HadTLV.Pt());
-          _hmap_tau2_eta[i]->Fill(Tau2HadTLV.Eta());
-          _hmap_tau2_phi[i]->Fill(Tau2HadTLV.Phi());
-          _hmap_Delta_pT[i]->Fill(abs(Tau1HadTLV.Pt() - Tau2HadTLV.Pt()));
+          _hmap_tau2_pT[i]->Fill(hadronTausTLV[1].Pt());
+          _hmap_tau2_eta[i]->Fill(hadronTausTLV[1].Eta());
+          _hmap_tau2_phi[i]->Fill(hadronTausTLV[1].Phi());
+          _hmap_Delta_pT[i]->Fill(abs(hadronTausTLV[0].Pt() - hadronTausTLV[1].Pt()));
         }
-        if (Muon1HadTLV.Pt() > 1.0)
+        if (hadronMuonsTLV[0].Pt() > 1.0)
         {
-          _hmap_muon1_pT[i]->Fill(Muon1HadTLV.Pt());
-          _hmap_muon1_eta[i]->Fill(Muon1HadTLV.Eta());
-          _hmap_muon1_phi[i]->Fill(Muon1HadTLV.Phi());
+          _hmap_muon1_pT[i]->Fill(hadronMuonsTLV[0].Pt());
+          _hmap_muon1_eta[i]->Fill(hadronMuonsTLV[0].Eta());
+          _hmap_muon1_phi[i]->Fill(hadronMuonsTLV[0].Phi());
         }
-        if (Muon2HadTLV.Pt() > 1.0)
+        if (hadronMuonsTLV[1].Pt() > 1.0)
         {
-          _hmap_muon2_pT[i]->Fill(Muon2HadTLV.Pt());
-          _hmap_muon2_eta[i]->Fill(Muon2HadTLV.Eta());
-          _hmap_muon2_phi[i]->Fill(Muon2HadTLV.Phi());
+          _hmap_muon2_pT[i]->Fill(hadronMuonsTLV[1].Pt());
+          _hmap_muon2_eta[i]->Fill(hadronMuonsTLV[1].Eta());
+          _hmap_muon2_phi[i]->Fill(hadronMuonsTLV[1].Phi());
         }
-        if (Elec1HadTLV.Pt() > 1.0)
+        if (hadronElectronsTLV[0].Pt() > 1.0)
         {
-          _hmap_elec1_pT[i]->Fill(Elec1HadTLV.Pt());
-          _hmap_elec1_eta[i]->Fill(Elec1HadTLV.Eta());
-          _hmap_elec1_phi[i]->Fill(Elec1HadTLV.Phi());
+          _hmap_elec1_pT[i]->Fill(hadronElectronsTLV[0].Pt());
+          _hmap_elec1_eta[i]->Fill(hadronElectronsTLV[0].Eta());
+          _hmap_elec1_phi[i]->Fill(hadronElectronsTLV[0].Phi());
         }
-        if (Elec2HadTLV.Pt() > 1.0)
+        if (hadronElectronsTLV[1].Pt() > 1.0)
         {
-          _hmap_elec2_pT[i]->Fill(Elec2HadTLV.Pt());
-          _hmap_elec2_eta[i]->Fill(Elec2HadTLV.Eta());
-          _hmap_elec2_phi[i]->Fill(Elec2HadTLV.Phi());
+          _hmap_elec2_pT[i]->Fill(hadronElectronsTLV[1].Pt());
+          _hmap_elec2_eta[i]->Fill(hadronElectronsTLV[1].Eta());
+          _hmap_elec2_phi[i]->Fill(hadronElectronsTLV[1].Phi());
         }
 
         if (tauMass > 0)
@@ -1339,3 +1295,11 @@ void PhenoAnalysis::createHistoMaps(int directories)
     _hmap_Gentau2_phi[i] = new TH1F("Gentau2Phi", "#phi(#tau_{2})", 70, -3.6, 3.6);
   }
 }
+
+
+
+
+bool compareTLVPTDescending(TLorentzVector tlv1, TLorentzVector tlv2){
+  return (tlv1.Pt() > tlv2.Pt()); 
+}
+
