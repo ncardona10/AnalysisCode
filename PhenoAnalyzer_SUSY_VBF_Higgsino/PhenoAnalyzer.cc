@@ -1,11 +1,9 @@
 /*
 @file PhenoAnalyzer.cc
-@author Andres Florez
-@author Carlos Miguel Patino
 @author Nathalia Cardona 
 @date April 2, 2017
 
-Code used to perform phenomenological analysis of Heavy Neutrinos in the tau channel
+Counts the number of leptons in different PT ranges
 */
 
 #include "PhenoAnalyzer.h"
@@ -90,6 +88,7 @@ void nLeptonAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDirectory *c
 int main(int argc, char *argv[])
 {
   cout << "Starting phenoanalyzer..." << endl;
+
 
   // standardize print to 2 dp
   cout << fixed;
