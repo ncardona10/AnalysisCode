@@ -1,9 +1,7 @@
-/*
-@file PhenoAnalyzer.cc
-@author Nathalia Cardona 
-@date April 2, 2017
-
-Counts the number of leptons in different PT ranges
+/*                             __
+                           .--()°'.'
+ Author: Nathalia Cardona '|, . ,'
+                           !_-(_\
 */
 
 #include "PhenoAnalyzer.h"
@@ -16,7 +14,6 @@ Counts the number of leptons in different PT ranges
 #include "Analysis/LeptonCounter.h"
 
 using namespace std;
-
 
 int main(int argc, char *argv[])
 {
@@ -35,13 +32,13 @@ int main(int argc, char *argv[])
 
   // output file manager
   TFile *HistoOutputFile = new TFile(argv[2], "RECREATE");
+
   // directory to store the histograms
   TDirectory *theDirectory = HistoOutputFile->mkdir("nLeptons");
 
   cout << "processing.." << endl;
 
   // get tree info
-
   vector<string> branches = {
       "Electron",
       "Muon",
@@ -49,6 +46,7 @@ int main(int argc, char *argv[])
       "MissingET"};
 
   map<string, TClonesArray *> branchDict;
+
   // create a dictionary with the branches
   for (int i = 0; (unsigned)i < branches.size(); i++)
   {
@@ -66,13 +64,11 @@ int main(int argc, char *argv[])
             .
             .
   */
+  // open output file
   HistoOutputFile->cd();
   theDirectory->cd();
 
-  for (int i = 0; (unsigned)i < ns.size(); i++)
-  {
-    nLeptonAnalysis(treeReader, HistoOutputFile, theDirectory, ns[i], branchDict);
-  }
+  drawLeptonCount(treeReader, ns, branchDict);
 
   // close output file
   HistoOutputFile->Close();

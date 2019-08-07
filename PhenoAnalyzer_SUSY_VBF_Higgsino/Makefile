@@ -70,6 +70,11 @@ compile_ROOT_Delphes: $(MAINFILE) $(OTHERFILES)
 	-I$(DELPHESINC) -I$(EXROOTINC)	\
 	-L$(DELPHESLIB) -lDelphes -L$(EXROOTLIB) -lExRootAnalysis $(ROOTLIBS)
 
+compile_ROOT_Delphes_Test: Test.cc $(OTHERFILES)
+	$(CXX) -o Test Test.cc $(SOURCEFILES) -Wall $(ROOTCFLAGS) 	\
+	-I$(DELPHESINC) -I$(EXROOTINC)	\
+	-L$(DELPHESLIB) -lDelphes -L$(EXROOTLIB) -lExRootAnalysis $(ROOTLIBS)
+
 # To compile with Root and Delphes in parallel mode
 compile_ROOT_Delphes_parallel: $(MAINFILE) $(OTHERFILES)
 	$(CXX) -fopenmp -o $(TARGETFILE_PARALLEL) $(MAINFILE_PARALLEL) $(SOURCEFILES) -Wall $(ROOTCFLAGS) 	\
