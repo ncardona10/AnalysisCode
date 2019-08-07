@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <bits/stdc++.h>
 #include "Analysis/LeptonCounter.h"
+#include "Analysis/VBF_Cuts.h"
 
 using namespace std;
 
@@ -34,7 +35,8 @@ int main(int argc, char *argv[])
   TFile *HistoOutputFile = new TFile(argv[2], "RECREATE");
 
   // directory to store the histograms
-  TDirectory *theDirectory = HistoOutputFile->mkdir("nLeptons");
+  TDirectory *nLeptonsDirectory = HistoOutputFile->mkdir("nLeptons");
+  TDirectory *VBF_CutsDirectory = HistoOutputFile->mkdir("VBF_Cuts");
 
   cout << "processing.." << endl;
 
@@ -66,11 +68,19 @@ int main(int argc, char *argv[])
   */
   // open output file
   HistoOutputFile->cd();
-  theDirectory->cd();
 
-  drawLeptonCount(treeReader, ns, branchDict);
+  nLeptonsDirectory->cd();
 
-  ptEtaPhi(treeReader, branchDict);
+  drawLeptonCount(treeReader, ns, branchDict, noFilter);
+
+  ptEtaPhi(treeReader, branchDict, noFilter);
+
+
+  VBF_CutsDirectory->cd();
+
+  drawLeptonCount(treeReader, ns, branchDict, cut1);
+
+  ptEtaPhi(treeReader, branchDict, cut1);
 
   // close output file
   HistoOutputFile->Close();

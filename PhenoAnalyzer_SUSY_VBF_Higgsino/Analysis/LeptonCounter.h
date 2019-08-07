@@ -85,7 +85,10 @@ void fillHisto(TH1 *histo, float value)
 
 map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
                                    int PTUpperCut,
-                                   map<string, TClonesArray *> branchDict)
+                                   map<string, TClonesArray *> branchDict,
+                                   bool (*filter)(ExRootTreeReader *,
+                                                  map<string, TClonesArray *>,
+                                                  int))
 {
 
   cout << "n = " << PTUpperCut << endl;
@@ -130,78 +133,86 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
     cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
     treeReader->ReadEntry(entry);
 
-    // electrons
-    for (int leaf = 0; leaf < branchDict["Electron"]->GetEntries(); leaf++)
+    if (filter(treeReader, branchDict, entry))
     {
-      Electron *lepton = (Electron *)branchDict["Electron"]->At(leaf);
-      if (lepton->PT > 8.0 && lepton->PT < PTUpperCut)
-      {
-        electronCount += 1.0;
-        leptonCount += 1.0;
-      }
-    }
 
-    // muons
-    for (int leaf = 0; leaf < branchDict["Muon"]->GetEntries(); leaf++)
-    {
-      Muon *lepton = (Muon *)branchDict["Muon"]->At(leaf);
-      if (lepton->PT > 8.0 && lepton->PT < PTUpperCut)
+      // electrons
+      for (int leaf = 0; leaf < branchDict["Electron"]->GetEntries(); leaf++)
       {
-        muonCount += 1.0;
-        leptonCount += 1.0;
-      }
-    }
-
-    // taus
-    for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
-    {
-      Jet *jet = (Jet *)branchDict["Jet"]->At(leaf);
-      if (jet->TauTag == 1)
-      {
-        if (elecOverlap(treeReader, branchDict, jet) == -1) // if ==-1, then there is no overlap
+        Electron *lepton = (Electron *)branchDict["Electron"]->At(leaf);
+        if (lepton->PT > 8.0 && lepton->PT < PTUpperCut)
         {
-          if (muonOverlap(treeReader, branchDict, jet) == -1)
+          electronCount += 1.0;
+          leptonCount += 1.0;
+        }
+      }
+
+      // muons
+      for (int leaf = 0; leaf < branchDict["Muon"]->GetEntries(); leaf++)
+      {
+        Muon *lepton = (Muon *)branchDict["Muon"]->At(leaf);
+        if (lepton->PT > 8.0 && lepton->PT < PTUpperCut)
+        {
+          muonCount += 1.0;
+          leptonCount += 1.0;
+        }
+      }
+
+      // taus
+      for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
+      {
+        Jet *jet = (Jet *)branchDict["Jet"]->At(leaf);
+        if (jet->TauTag == 1)
+        {
+          if (elecOverlap(treeReader, branchDict, jet) == -1) // if ==-1, then there is no overlap
           {
-            // its a tau!
-            if (jet->PT > 8.0 && jet->PT < PTUpperCut)
+            if (muonOverlap(treeReader, branchDict, jet) == -1)
             {
-              leptonCount += 1.0;
-              tauCount += 1.0;
+              // its a tau!
+              if (jet->PT > 8.0 && jet->PT < PTUpperCut)
+              {
+                leptonCount += 1.0;
+                tauCount += 1.0;
+              }
+            }
+            else
+            {
+              //muon overlap
+              muonCount -= 1.0;
+              leptonCount -= 1.0;
             }
           }
           else
           {
-            //muon overlap
-            muonCount -= 1.0;
+            //electron overlap
+            electronCount -= 1.0;
             leptonCount -= 1.0;
           }
         }
-        else
-        {
-          //electron overlap
-          electronCount -= 1.0;
-          leptonCount -= 1.0;
-        }
       }
+
+      // write histograms
+
+      fillHisto(nLeptonHistogram, leptonCount);
+      fillHisto(nElecHistogram, electronCount);
+      fillHisto(nMuonHistogram, muonCount);
+      fillHisto(nTauHistogram, tauCount);
     }
-
-    // write histograms
-
-    fillHisto(nLeptonHistogram, leptonCount);
-    fillHisto(nElecHistogram, electronCount);
-    fillHisto(nMuonHistogram, muonCount);
-    fillHisto(nTauHistogram, tauCount);
   }
 
   cout << endl;
   return histograms;
 }
-bool inSet(int val, set<int> theSet){
-  return theSet.count(val)>0;
+bool inSet(int val, set<int> theSet)
+{
+  return theSet.count(val) > 0;
 }
 
 void ptEtaPhi(ExRootTreeReader *treeReader,
-                            map<string, TClonesArray *> branchDict)
+              map<string, TClonesArray *> branchDict,
+              bool (*filter)(ExRootTreeReader *,
+                             map<string, TClonesArray *>, 
+                             int))
 {
 
   cout << "Calculating Pt, eta and phi histograms..." << endl;
@@ -219,15 +230,18 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
       float x_min = 0.0;
       float x_max = 15.0;
 
-      if(variables[i].compare("pt") == 0){
+      if (variables[i].compare("pt") == 0)
+      {
         x_max = 100;
         bins = 50;
       }
-      else if(variables[i].compare("phi") == 0){
+      else if (variables[i].compare("phi") == 0)
+      {
         x_max = 3.5;
         x_min = -0.5;
       }
-      else{
+      else
+      {
         x_min = -5;
         x_max = 5;
       }
@@ -248,63 +262,68 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
 
     treeReader->ReadEntry(entry);
 
-    set<int> elecIndices;
-    set<int> muonIndices;
-
-    // taus
-    for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
+    if (filter(treeReader, branchDict, entry))
     {
-      Jet *jet = (Jet *)branchDict["Jet"]->At(leaf);
-      if (jet->TauTag == 1)
-      {
-        int elecOverlapIndex = elecOverlap(treeReader, branchDict, jet);
-        int muonOverlapIndex = muonOverlap(treeReader, branchDict, jet);
 
-        if (elecOverlapIndex == -1)
+      set<int> elecIndices;
+      set<int> muonIndices;
+
+      // taus
+      for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
+      {
+        Jet *jet = (Jet *)branchDict["Jet"]->At(leaf);
+        if (jet->TauTag == 1)
         {
-          if (muonOverlapIndex == -1)
+          int elecOverlapIndex = elecOverlap(treeReader, branchDict, jet);
+          int muonOverlapIndex = muonOverlap(treeReader, branchDict, jet);
+
+          if (elecOverlapIndex == -1)
           {
-            // its a tau!
-            histos["pttau"]->Fill(jet->PT);
-            histos["etatau"]->Fill(jet->Eta);
-            histos["phitau"]->Fill(normalizedDphi(jet->Phi));
+            if (muonOverlapIndex == -1)
+            {
+              // its a tau!
+              histos["pttau"]->Fill(jet->PT);
+              histos["etatau"]->Fill(jet->Eta);
+              histos["phitau"]->Fill(normalizedDphi(jet->Phi));
+            }
+            else
+            {
+              //muon overlap
+              muonIndices.insert(muonOverlapIndex);
+            }
           }
           else
           {
-            //muon overlap
-            muonIndices.insert(muonOverlapIndex);
+            //electron overlap
+            elecIndices.insert(elecOverlapIndex);
           }
         }
-        else
+      }
+
+      // electrons
+      for (int leaf = 0; leaf < branchDict["Electron"]->GetEntries(); leaf++)
+      {
+        Electron *electron = (Electron *)branchDict["Electron"]->At(leaf);
+        if (!inSet(leaf, elecIndices))
         {
-          //electron overlap
-          elecIndices.insert(elecOverlapIndex);
+          histos["ptelectron"]->Fill(electron->PT);
+          histos["etaelectron"]->Fill(electron->Eta);
+          histos["phielectron"]->Fill(normalizedDphi(electron->Phi));
+        }
+      }
+
+      // muons
+      for (int leaf = 0; leaf < branchDict["Muon"]->GetEntries(); leaf++)
+      {
+        Muon *muon = (Muon *)branchDict["Muon"]->At(leaf);
+        if (!inSet(leaf, muonIndices))
+        {
+          histos["ptmuon"]->Fill(muon->PT);
+          histos["etamuon"]->Fill(muon->Eta);
+          histos["phimuon"]->Fill(normalizedDphi(muon->Phi));
         }
       }
     }
-
-    // electrons
-    for (int leaf = 0; leaf < branchDict["Electron"]->GetEntries(); leaf++)
-    {
-      Electron *electron = (Electron *)branchDict["Electron"]->At(leaf);
-      if(!inSet(leaf,elecIndices)){
-        histos[ "ptelectron"]->Fill(electron->PT);
-        histos["etaelectron"]->Fill(electron->Eta);
-        histos["phielectron"]->Fill(normalizedDphi(electron->Phi));
-      }
-    }
-
-    // muons
-    for (int leaf = 0; leaf < branchDict["Muon"]->GetEntries(); leaf++)
-    {
-      Muon *muon = (Muon *)branchDict["Muon"]->At(leaf);
-      if(!inSet(leaf,muonIndices)){
-        histos[ "ptmuon"]->Fill(muon->PT);
-        histos["etamuon"]->Fill(muon->Eta);
-        histos["phimuon"]->Fill(normalizedDphi(muon->Phi));
-      }
-    }
-
   }
 
   for (int i = 0; (unsigned)i < variables.size(); i++)
@@ -315,10 +334,7 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
     }
   }
   cout << endl;
-  
 }
-
-
 
 void drawMultiHistos(TObjArray histos, string title, string particleType)
 {
@@ -335,7 +351,12 @@ void drawMultiHistos(TObjArray histos, string title, string particleType)
   cl->Write();
 }
 
-void drawLeptonCount(ExRootTreeReader *treeReader, vector<int> ns, map<string, TClonesArray *> branchDict)
+void drawLeptonCount(ExRootTreeReader *treeReader,
+                     vector<int> ns,
+                     map<string, TClonesArray *> branchDict,
+                     bool (*filter)(ExRootTreeReader *,
+                                    map<string, TClonesArray *>,
+                                    int))
 {
 
   vector<string> particleTypes = {"lepton", "electron", "muon", "tau"};
@@ -348,7 +369,7 @@ void drawLeptonCount(ExRootTreeReader *treeReader, vector<int> ns, map<string, T
 
   for (int i = 0; (unsigned)i < ns.size(); i++)
   {
-    map<string, TH1 *> histoOutput = nLeptonAnalysis(treeReader, ns[i], branchDict);
+    map<string, TH1 *> histoOutput = nLeptonAnalysis(treeReader, ns[i], branchDict, filter);
 
     for (int j = 0; (unsigned)j < particleTypes.size(); j++)
     {
