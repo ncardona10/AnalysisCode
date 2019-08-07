@@ -70,6 +70,8 @@ int main(int argc, char *argv[])
 
   drawLeptonCount(treeReader, ns, branchDict);
 
+  ptEtaPhi(treeReader, branchDict);
+
   // close output file
   HistoOutputFile->Close();
 

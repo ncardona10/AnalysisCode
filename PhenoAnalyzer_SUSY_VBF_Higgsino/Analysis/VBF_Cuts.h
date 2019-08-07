@@ -9,11 +9,6 @@
 #include "../ROOTFunctions.h"
 #include "../DelphesFunctions.h"
 
-/*
-  Returns PT of the lepton in the event if there is exactly 1 lepton. 
-  Else returns -1. 
-*/
-
 bool singleLeptonPT(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDict, int entry)
 {
   float leptonCount = 0;
