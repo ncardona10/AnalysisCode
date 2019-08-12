@@ -154,8 +154,7 @@ bool cut1(ExRootTreeReader *treeReader,
       }
     }
 
-    bool allEtaBool = allEta(treeReader, branchDict, entry);
-
+    
     bool mjjBool = mjj(treeReader, branchDict, entry) > 500;
 
     Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
@@ -163,14 +162,13 @@ bool cut1(ExRootTreeReader *treeReader,
 
     bool deltaEtaBool = deltaEta(leadingJet, subLeadingJet) < 5.0;
 
-    bool ptLeadingAndSubleadingBool = leadingJet->PT > 30 && subLeadingJet->PT > 30;
     bool metBool = met(treeReader, branchDict, entry);
 
-    return bJetsBool && allEtaBool && mjjBool && deltaEtaBool && ptLeadingAndSubleadingBool && metBool;
+    return bJetsBool && mjjBool && deltaEtaBool && metBool;
   }
-  else{
+  else
+  {
     return false;
   }
-
-
 }
+	

@@ -91,7 +91,7 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
                                                   int))
 {
 
-  cout << "n = " << PTUpperCut << endl;
+  // cout << "n = " << PTUpperCut << endl;
 
   Long64_t numberOfEntries = treeReader->GetEntries();
 
@@ -130,7 +130,7 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
     float tauCount = 0;
 
     // print percentage of completion
-    cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
+    // cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
     treeReader->ReadEntry(entry);
 
     if (filter(treeReader, branchDict, entry))
@@ -200,7 +200,7 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
     }
   }
 
-  cout << endl;
+  // cout << endl;
   return histograms;
 }
 bool inSet(int val, set<int> theSet)
@@ -215,7 +215,7 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
                              int))
 {
 
-  cout << "Calculating Pt, eta and phi histograms..." << endl;
+  // cout << "Calculating Pt, eta and phi histograms..." << endl;
 
   vector<string> variables = {"pt", "eta", "phi"};
   vector<string> particleTypes = {"electron", "muon", "tau"};
@@ -258,7 +258,7 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
   {
 
     // print percentage of completion
-    cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
+    // cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
 
     treeReader->ReadEntry(entry);
 
@@ -333,7 +333,7 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
       histos[variables[i] + particleTypes[j]]->Write();
     }
   }
-  cout << endl;
+  // cout << endl;
 }
 
 void drawMultiHistos(TObjArray histos, string title, string particleType)
@@ -360,12 +360,12 @@ void drawLeptonCount(ExRootTreeReader *treeReader,
 {
 
   vector<string> particleTypes = {"lepton", "electron", "muon", "tau"};
-  map<string, TObjArray> histos;
+  // map<string, TObjArray> histos;
 
-  for (int i = 0; (unsigned)i < particleTypes.size(); i++)
-  {
-    histos[particleTypes[i]] = TObjArray();
-  }
+  // for (int i = 0; (unsigned)i < particleTypes.size(); i++)
+  // {
+  //   histos[particleTypes[i]] = TObjArray();
+  // }
 
   for (int i = 0; (unsigned)i < ns.size(); i++)
   {
@@ -373,12 +373,13 @@ void drawLeptonCount(ExRootTreeReader *treeReader,
 
     for (int j = 0; (unsigned)j < particleTypes.size(); j++)
     {
-      histos[particleTypes[j]].AddLast(histoOutput[particleTypes[j]]);
+      // histos[particleTypes[j]].AddLast(histoOutput[particleTypes[j]]);
+      histoOutput[particleTypes[j]]->Write();
     }
   }
 
-  for (int i = 0; (unsigned)i < particleTypes.size(); i++)
-  {
-    drawMultiHistos(histos[particleTypes[i]], "#" + particleTypes[i] + "s", particleTypes[i]);
-  }
+  // for (int i = 0; (unsigned)i < particleTypes.size(); i++)
+  // {
+  //   drawMultiHistos(histos[particleTypes[i]], "#" + particleTypes[i] + "s", particleTypes[i]);
+  // }
 }

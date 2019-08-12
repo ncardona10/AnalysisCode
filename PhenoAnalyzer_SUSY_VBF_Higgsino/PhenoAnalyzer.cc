@@ -13,6 +13,7 @@
 #include <bits/stdc++.h>
 #include "Analysis/LeptonCounter.h"
 #include "Analysis/VBF_Cuts.h"
+#include "Analysis/singleParticle.h"
 
 using namespace std;
 
@@ -37,6 +38,9 @@ int main(int argc, char *argv[])
   // directory to store the histograms
   TDirectory *nLeptonsDirectory = HistoOutputFile->mkdir("nLeptons");
   TDirectory *VBF_CutsDirectory = HistoOutputFile->mkdir("VBF_Cuts");
+  TDirectory *single_e = HistoOutputFile->mkdir("single_e");
+  TDirectory *single_mu = HistoOutputFile->mkdir("single_mu");
+  TDirectory *single_tau = HistoOutputFile->mkdir("single_tau");
 
   cout << "processing.." << endl;
 
@@ -70,17 +74,29 @@ int main(int argc, char *argv[])
   HistoOutputFile->cd();
 
   nLeptonsDirectory->cd();
-
+  cout<<"nLeptons"<<endl;
   drawLeptonCount(treeReader, ns, branchDict, noFilter);
-
   ptEtaPhi(treeReader, branchDict, noFilter);
 
-
   VBF_CutsDirectory->cd();
-
+  cout<<"VBF_Cuts"<<endl;
   drawLeptonCount(treeReader, ns, branchDict, cut1);
-
   ptEtaPhi(treeReader, branchDict, cut1);
+
+  single_e->cd();
+  cout<<"single_e"<<endl;
+  drawLeptonCount(treeReader, ns, branchDict, cut_e);
+  ptEtaPhi(treeReader, branchDict, cut_e);
+
+  single_mu->cd();
+  cout<<"single_mu"<<endl;
+  drawLeptonCount(treeReader, ns, branchDict, cut_mu);
+  ptEtaPhi(treeReader, branchDict, cut_mu);
+
+  single_tau->cd();
+  cout<<"single_tau"<<endl;
+  drawLeptonCount(treeReader, ns, branchDict, cut_tau);
+  ptEtaPhi(treeReader, branchDict, cut_tau);
 
   // close output file
   HistoOutputFile->Close();
