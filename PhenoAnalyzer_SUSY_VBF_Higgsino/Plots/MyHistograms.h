@@ -18,8 +18,11 @@ void Draw_Normalised(TObjArray histos,
   // this function draws the histoname from the TObjArray superimposed
   // and normalised if required
 
-  if (histos.GetEntries() == 0)
+
+  if (histos.GetEntries() == 0){
+
     return;
+  }
 
   TObjArray RootFiles;
   std::vector<std::string> legends_str;
@@ -29,11 +32,14 @@ void Draw_Normalised(TObjArray histos,
   {
 
     TH1F *h = (TH1F *)histos[i];
+    // cout<<"histo title in plot: "<<h->GetTitle()<<endl;
     legends_str.push_back(h->GetTitle());
+
     colours.push_back(i + 1);
   }
 
   // lets open and draw the canvas
+
   TCanvas *canvas;
   if (pad == 0)
   {
@@ -50,11 +56,15 @@ void Draw_Normalised(TObjArray histos,
     stacktitle = ((TH1F *)histos[0])->GetTitle();
   THStack *Hs = new THStack("hs2", stacktitle.c_str());
 
+
   TLegend *legend = new TLegend(0.80, 0.3, 0.995, 0.4); // we need different positions for the legend to not
+
 
   for (int i = 0; i < histos.GetEntries(); i++)
   {
+
     TH1F *h = (TH1F *)histos[i];
+
 
     if (normalised)
     {
@@ -63,8 +73,11 @@ void Draw_Normalised(TObjArray histos,
         h->Scale(1.0 / val1);
     }
 
+
     h->SetLineWidth(2);
     h->SetLineColor(colours[i]);
+
+
 
     legend->AddEntry(h, legends_str[i].c_str(), "L");
     Hs->Add(h, "sames");
@@ -101,6 +114,7 @@ void Draw_Normalised(TObjArray histos,
   {
     Hs->GetXaxis()->SetLimits(0, maxXAxis);
   }
+
 
   pad->Update();
 

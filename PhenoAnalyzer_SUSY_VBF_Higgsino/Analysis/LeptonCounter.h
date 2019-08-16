@@ -12,6 +12,7 @@
 #include <string>
 #include <map>
 #include <set>
+// #include "./VBF_Cuts.h"
 
 int elecOverlap(ExRootTreeReader *treeReader,
                 map<string, TClonesArray *> branchDict,
@@ -91,7 +92,7 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
                                                   int))
 {
 
-  // cout << "n = " << PTUpperCut << endl;
+//  cout << "nLepton Analysis with n = " << PTUpperCut << endl;
 
   Long64_t numberOfEntries = treeReader->GetEntries();
 
@@ -130,7 +131,7 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
     float tauCount = 0;
 
     // print percentage of completion
-    // cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
+//    // cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
     treeReader->ReadEntry(entry);
 
     if (filter(treeReader, branchDict, entry))
@@ -140,7 +141,7 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
       for (int leaf = 0; leaf < branchDict["Electron"]->GetEntries(); leaf++)
       {
         Electron *lepton = (Electron *)branchDict["Electron"]->At(leaf);
-        if (lepton->PT > 8.0 && lepton->PT < PTUpperCut)
+        if (lepton->PT > 8.0 && lepton->PT < PTUpperCut && abs(lepton->Eta) < 2.4)
         {
           electronCount += 1.0;
           leptonCount += 1.0;
@@ -151,7 +152,7 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
       for (int leaf = 0; leaf < branchDict["Muon"]->GetEntries(); leaf++)
       {
         Muon *lepton = (Muon *)branchDict["Muon"]->At(leaf);
-        if (lepton->PT > 8.0 && lepton->PT < PTUpperCut)
+        if (lepton->PT > 5.0 && lepton->PT < PTUpperCut && abs(lepton->Eta) < 2.4)
         {
           muonCount += 1.0;
           leptonCount += 1.0;
@@ -169,7 +170,8 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
             if (muonOverlap(treeReader, branchDict, jet) == -1)
             {
               // its a tau!
-              if (jet->PT > 8.0 && jet->PT < PTUpperCut)
+              // well constructed taus have pt>20
+              if (jet->PT > 20.0 && jet->PT < PTUpperCut && abs(jet->Eta) < 2.4)
               {
                 leptonCount += 1.0;
                 tauCount += 1.0;
@@ -200,7 +202,8 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
     }
   }
 
-  // cout << endl;
+//  // cout << endl;
+//  cout << "nLepton Analysis with n = " << PTUpperCut << " done." << endl;
   return histograms;
 }
 bool inSet(int val, set<int> theSet)
@@ -208,37 +211,45 @@ bool inSet(int val, set<int> theSet)
   return theSet.count(val) > 0;
 }
 
-void ptEtaPhi(ExRootTreeReader *treeReader,
-              map<string, TClonesArray *> branchDict,
-              bool (*filter)(ExRootTreeReader *,
-                             map<string, TClonesArray *>, 
-                             int))
+void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
+                   map<string, TClonesArray *> branchDict,
+                   bool (*filter)(ExRootTreeReader *,
+                                  map<string, TClonesArray *>,
+                                  int))
 {
 
-  // cout << "Calculating Pt, eta and phi histograms..." << endl;
+//  cout << "Calculating Pt, eta, phi, mjj and mt" << endl;
 
-  vector<string> variables = {"pt", "eta", "phi"};
-  vector<string> particleTypes = {"electron", "muon", "tau"};
+  vector<string> variables = {"pt", "eta", "phi", "Mt"};
+  vector<string> particleTypes = {"electron",
+                                  "muon",
+                                  "tau",
+                                  "jet"};
 
+//  cout << "creating histograms..." << endl;
   // create histograms
   map<string, TH1 *> histos;
   for (int i = 0; (unsigned)i < variables.size(); i++)
   {
     for (int j = 0; (unsigned)j < particleTypes.size(); j++)
     {
-      int bins = 15;
+      int bins = 100;
       float x_min = 0.0;
       float x_max = 15.0;
 
       if (variables[i].compare("pt") == 0)
       {
-        x_max = 100;
-        bins = 50;
+        x_max = 500;
+        bins = 500;
       }
       else if (variables[i].compare("phi") == 0)
       {
-        x_max = 3.5;
-        x_min = -0.5;
+        x_max = TMath::Pi();
+        x_min = -TMath::Pi();
+      }
+      else if (variables[i].compare("Mt") == 0)
+      {
+        x_max = 1000;
       }
       else
       {
@@ -252,13 +263,20 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
     }
   }
 
+  histos["mass"] = blankHistogram("Mjj", "Mjj", 100, 0, 5000);
+  histos["MET"] = blankHistogram("MET", "MET", 100, 0, 1000);
+
+//  cout << "histograms created" << endl;
+
+//  cout << "starting entry loop..." << endl;
+
   Long64_t numberOfEntries = treeReader->GetEntries();
 
   for (Int_t entry = 0; entry < numberOfEntries; ++entry)
   {
 
     // print percentage of completion
-    // cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
+//    // cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
 
     treeReader->ReadEntry(entry);
 
@@ -268,6 +286,11 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
       set<int> elecIndices;
       set<int> muonIndices;
 
+      // MET stuff
+      MissingET *METPointer = (MissingET *)branchDict["MissingET"]->At(0);
+      double MET = METPointer->MET;
+
+//      cout << "taus" << endl;
       // taus
       for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
       {
@@ -282,9 +305,15 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
             if (muonOverlapIndex == -1)
             {
               // its a tau!
-              histos["pttau"]->Fill(jet->PT);
-              histos["etatau"]->Fill(jet->Eta);
-              histos["phitau"]->Fill(normalizedDphi(jet->Phi));
+              if ((abs(jet->Eta) < 2.4) && (jet->PT > 20.0))
+              {
+                histos["pttau"]->Fill(jet->PT);
+                histos["etatau"]->Fill(jet->Eta);
+                histos["phitau"]->Fill(normalizedDphi(jet->Phi));
+
+                double mtval = mt(jet->PT, MET, jet->Phi - METPointer->Phi);
+                histos["Mttau"]->Fill(mtval);
+              }
             }
             else
             {
@@ -300,31 +329,91 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
         }
       }
 
+//      cout << "electrons" << endl;
+
       // electrons
       for (int leaf = 0; leaf < branchDict["Electron"]->GetEntries(); leaf++)
       {
         Electron *electron = (Electron *)branchDict["Electron"]->At(leaf);
         if (!inSet(leaf, elecIndices))
         {
-          histos["ptelectron"]->Fill(electron->PT);
-          histos["etaelectron"]->Fill(electron->Eta);
-          histos["phielectron"]->Fill(normalizedDphi(electron->Phi));
+          if ((abs(electron->Eta) < 2.4) && (electron->PT > 8.0))
+          {
+            histos["ptelectron"]->Fill(electron->PT);
+            histos["etaelectron"]->Fill(electron->Eta);
+            histos["phielectron"]->Fill(normalizedDphi(electron->Phi));
+
+            double mtval = mt(electron->PT, MET, electron->Phi - METPointer->Phi);
+            histos["Mtelectron"]->Fill(mtval);
+          }
         }
       }
 
+//      cout << "muons" << endl;
       // muons
       for (int leaf = 0; leaf < branchDict["Muon"]->GetEntries(); leaf++)
       {
         Muon *muon = (Muon *)branchDict["Muon"]->At(leaf);
         if (!inSet(leaf, muonIndices))
         {
-          histos["ptmuon"]->Fill(muon->PT);
-          histos["etamuon"]->Fill(muon->Eta);
-          histos["phimuon"]->Fill(normalizedDphi(muon->Phi));
+          if ((abs(muon->Eta) < 2.4) && (muon->PT > 5.0))
+          {
+            histos["ptmuon"]->Fill(muon->PT);
+            histos["etamuon"]->Fill(muon->Eta);
+            histos["phimuon"]->Fill(normalizedDphi(muon->Phi));
+
+            double mtval = mt(muon->PT, MET, muon->Phi - METPointer->Phi);
+            histos["Mtmuon"]->Fill(mtval);
+          }
         }
       }
+
+//      cout<<"jets"<<endl;
+      //jets
+      for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
+      {
+//        cout<<"jet: "<< leaf <<endl;
+        Jet *jet = (Jet *)branchDict["Jet"]->At(leaf);
+        if (!inSet(leaf, muonIndices) && !inSet(leaf, elecIndices))
+        {
+
+//          cout<<"calculating overlaps"<<endl;
+          int elecOverlapIndex = elecOverlap(treeReader, branchDict, jet);
+          int muonOverlapIndex = muonOverlap(treeReader, branchDict, jet);
+//          cout<<"overlaps calculated"<<endl;
+
+          if (elecOverlapIndex == -1 && muonOverlapIndex == -1)
+          {
+//            cout<<"filling pt eta and phi histos"<<endl;
+            histos["ptjet"]->Fill(jet->PT);
+            histos["etajet"]->Fill(jet->Eta);
+            histos["phijet"]->Fill(normalizedDphi(jet->Phi));
+//            cout<<"filling pt eta and phi histos DONE"<<endl;
+
+//            cout<<"filling mt histo"<<endl;
+            //Doesnt make sense but needed to keep code symmetry
+            double mtval = mt(jet->PT, MET, jet->Phi - METPointer->Phi);
+            histos["Mtjet"]->Fill(mtval);
+//            cout<<"filling mt histo DONE"<<endl;
+          }
+        }
+      }
+
+//      cout<<"mjj"<<endl;
+      //Mjj
+      if (min2Jets(treeReader, branchDict, entry))
+      {
+        double mass = mjj(treeReader, branchDict, entry);
+        histos["mass"]->Fill(mass);
+      }
+
+      //MET
+//      cout<<"MET"<<endl;
+      histos["MET"]->Fill(MET);
     }
   }
+
+//  cout << "entry loop done" << endl;
 
   for (int i = 0; (unsigned)i < variables.size(); i++)
   {
@@ -333,7 +422,11 @@ void ptEtaPhi(ExRootTreeReader *treeReader,
       histos[variables[i] + particleTypes[j]]->Write();
     }
   }
-  // cout << endl;
+
+  histos["mass"]->Write();
+  histos["MET"]->Write();
+//  // cout << endl;
+//  cout << "Calculating Pt, eta, phi, mjj and mt DONE." << endl;
 }
 
 void drawMultiHistos(TObjArray histos, string title, string particleType)
@@ -358,7 +451,7 @@ void drawLeptonCount(ExRootTreeReader *treeReader,
                                     map<string, TClonesArray *>,
                                     int))
 {
-
+//  cout << "draw lepton count" << endl;
   vector<string> particleTypes = {"lepton", "electron", "muon", "tau"};
   // map<string, TObjArray> histos;
 

@@ -12,8 +12,7 @@
 #include <iomanip>
 #include <bits/stdc++.h>
 #include "Analysis/LeptonCounter.h"
-#include "Analysis/VBF_Cuts.h"
-#include "Analysis/singleParticle.h"
+#include "Analysis/Cuts.h"
 
 using namespace std;
 
@@ -38,6 +37,7 @@ int main(int argc, char *argv[])
   // directory to store the histograms
   TDirectory *nLeptonsDirectory = HistoOutputFile->mkdir("nLeptons");
   TDirectory *VBF_CutsDirectory = HistoOutputFile->mkdir("VBF_Cuts");
+  TDirectory *CutsDirectory = HistoOutputFile->mkdir("Extra_Cuts");
   TDirectory *single_e = HistoOutputFile->mkdir("single_e");
   TDirectory *single_mu = HistoOutputFile->mkdir("single_mu");
   TDirectory *single_tau = HistoOutputFile->mkdir("single_tau");
@@ -70,33 +70,41 @@ int main(int argc, char *argv[])
             .
             .
   */
+ 
   // open output file
   HistoOutputFile->cd();
 
   nLeptonsDirectory->cd();
   cout<<"nLeptons"<<endl;
   drawLeptonCount(treeReader, ns, branchDict, noFilter);
-  ptEtaPhi(treeReader, branchDict, noFilter);
+  ptEtaPhiMjjMt(treeReader, branchDict, noFilter);
+
+  cout<<"nLeptons done."<<endl; 
 
   VBF_CutsDirectory->cd();
   cout<<"VBF_Cuts"<<endl;
-  drawLeptonCount(treeReader, ns, branchDict, cut1);
-  ptEtaPhi(treeReader, branchDict, cut1);
+  drawLeptonCount(treeReader, ns, branchDict, vbfCut);
+  ptEtaPhiMjjMt(treeReader, branchDict, vbfCut);
+
+  CutsDirectory->cd();
+  cout<<"Extra_cuts"<<endl;
+  drawLeptonCount(treeReader, ns, branchDict, cuts);
+  ptEtaPhiMjjMt(treeReader, branchDict, cuts);
 
   single_e->cd();
   cout<<"single_e"<<endl;
   drawLeptonCount(treeReader, ns, branchDict, cut_e);
-  ptEtaPhi(treeReader, branchDict, cut_e);
+  ptEtaPhiMjjMt(treeReader, branchDict, cut_e);
 
   single_mu->cd();
   cout<<"single_mu"<<endl;
   drawLeptonCount(treeReader, ns, branchDict, cut_mu);
-  ptEtaPhi(treeReader, branchDict, cut_mu);
+  ptEtaPhiMjjMt(treeReader, branchDict, cut_mu);
 
   single_tau->cd();
   cout<<"single_tau"<<endl;
   drawLeptonCount(treeReader, ns, branchDict, cut_tau);
-  ptEtaPhi(treeReader, branchDict, cut_tau);
+  ptEtaPhiMjjMt(treeReader, branchDict, cut_tau);
 
   // close output file
   HistoOutputFile->Close();
