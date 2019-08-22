@@ -11,6 +11,7 @@
 #include "../Analysis/Physics.h"
 #include <string>
 #include <map>
+#include <vector>
 #include <set>
 // #include "./VBF_Cuts.h"
 
@@ -87,12 +88,16 @@ void fillHisto(TH1 *histo, float value)
 map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
                                    int PTUpperCut,
                                    map<string, TClonesArray *> branchDict,
+                                   vector<bool> &vbfCutsArr,
+                                   vector<bool> &cutsArr,
                                    bool (*filter)(ExRootTreeReader *,
                                                   map<string, TClonesArray *>,
-                                                  int))
+                                                  int,
+                                                  vector<bool>&,
+                                                  vector<bool>&))
 {
 
-//  cout << "nLepton Analysis with n = " << PTUpperCut << endl;
+  //  cout << "nLepton Analysis with n = " << PTUpperCut << endl;
 
   Long64_t numberOfEntries = treeReader->GetEntries();
 
@@ -131,10 +136,10 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
     float tauCount = 0;
 
     // print percentage of completion
-//    // cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
+    //    // cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
     treeReader->ReadEntry(entry);
 
-    if (filter(treeReader, branchDict, entry))
+    if (filter(treeReader, branchDict, entry, vbfCutsArr, cutsArr))
     {
 
       // electrons
@@ -202,8 +207,8 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
     }
   }
 
-//  // cout << endl;
-//  cout << "nLepton Analysis with n = " << PTUpperCut << " done." << endl;
+  //  // cout << endl;
+  //  cout << "nLepton Analysis with n = " << PTUpperCut << " done." << endl;
   return histograms;
 }
 bool inSet(int val, set<int> theSet)
@@ -211,14 +216,19 @@ bool inSet(int val, set<int> theSet)
   return theSet.count(val) > 0;
 }
 
-void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
-                   map<string, TClonesArray *> branchDict,
-                   bool (*filter)(ExRootTreeReader *,
-                                  map<string, TClonesArray *>,
-                                  int))
+void ptEtaPhiMjjMt(
+    ExRootTreeReader *treeReader,
+    map<string, TClonesArray *> branchDict,
+    vector<bool> vbfCutsArr,
+    vector<bool> cutsArr,
+    bool (*filter)(ExRootTreeReader *,
+                   map<string, TClonesArray *>,
+                   int,
+                   vector<bool>&,
+                   vector<bool>&))
 {
 
-//  cout << "Calculating Pt, eta, phi, mjj and mt" << endl;
+  //  cout << "Calculating Pt, eta, phi, mjj and mt" << endl;
 
   vector<string> variables = {"pt", "eta", "phi", "Mt"};
   vector<string> particleTypes = {"electron",
@@ -226,7 +236,7 @@ void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
                                   "tau",
                                   "jet"};
 
-//  cout << "creating histograms..." << endl;
+  //  cout << "creating histograms..." << endl;
   // create histograms
   map<string, TH1 *> histos;
   for (int i = 0; (unsigned)i < variables.size(); i++)
@@ -266,9 +276,9 @@ void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
   histos["mass"] = blankHistogram("Mjj", "Mjj", 100, 0, 5000);
   histos["MET"] = blankHistogram("MET", "MET", 100, 0, 1000);
 
-//  cout << "histograms created" << endl;
+  //  cout << "histograms created" << endl;
 
-//  cout << "starting entry loop..." << endl;
+  //  cout << "starting entry loop..." << endl;
 
   Long64_t numberOfEntries = treeReader->GetEntries();
 
@@ -276,11 +286,11 @@ void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
   {
 
     // print percentage of completion
-//    // cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
+    //    // cout << "\r" << (100.0 * entry) / numberOfEntries << "%";
 
     treeReader->ReadEntry(entry);
 
-    if (filter(treeReader, branchDict, entry))
+    if (filter(treeReader, branchDict, entry, vbfCutsArr, cutsArr))
     {
 
       set<int> elecIndices;
@@ -290,7 +300,7 @@ void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
       MissingET *METPointer = (MissingET *)branchDict["MissingET"]->At(0);
       double MET = METPointer->MET;
 
-//      cout << "taus" << endl;
+      //      cout << "taus" << endl;
       // taus
       for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
       {
@@ -329,7 +339,7 @@ void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
         }
       }
 
-//      cout << "electrons" << endl;
+      //      cout << "electrons" << endl;
 
       // electrons
       for (int leaf = 0; leaf < branchDict["Electron"]->GetEntries(); leaf++)
@@ -349,7 +359,7 @@ void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
         }
       }
 
-//      cout << "muons" << endl;
+      //      cout << "muons" << endl;
       // muons
       for (int leaf = 0; leaf < branchDict["Muon"]->GetEntries(); leaf++)
       {
@@ -368,38 +378,38 @@ void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
         }
       }
 
-//      cout<<"jets"<<endl;
+      //      cout<<"jets"<<endl;
       //jets
       for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
       {
-//        cout<<"jet: "<< leaf <<endl;
+        //        cout<<"jet: "<< leaf <<endl;
         Jet *jet = (Jet *)branchDict["Jet"]->At(leaf);
         if (!inSet(leaf, muonIndices) && !inSet(leaf, elecIndices))
         {
 
-//          cout<<"calculating overlaps"<<endl;
+          //          cout<<"calculating overlaps"<<endl;
           int elecOverlapIndex = elecOverlap(treeReader, branchDict, jet);
           int muonOverlapIndex = muonOverlap(treeReader, branchDict, jet);
-//          cout<<"overlaps calculated"<<endl;
+          //          cout<<"overlaps calculated"<<endl;
 
           if (elecOverlapIndex == -1 && muonOverlapIndex == -1)
           {
-//            cout<<"filling pt eta and phi histos"<<endl;
+            //            cout<<"filling pt eta and phi histos"<<endl;
             histos["ptjet"]->Fill(jet->PT);
             histos["etajet"]->Fill(jet->Eta);
             histos["phijet"]->Fill(normalizedDphi(jet->Phi));
-//            cout<<"filling pt eta and phi histos DONE"<<endl;
+            //            cout<<"filling pt eta and phi histos DONE"<<endl;
 
-//            cout<<"filling mt histo"<<endl;
+            //            cout<<"filling mt histo"<<endl;
             //Doesnt make sense but needed to keep code symmetry
             double mtval = mt(jet->PT, MET, jet->Phi - METPointer->Phi);
             histos["Mtjet"]->Fill(mtval);
-//            cout<<"filling mt histo DONE"<<endl;
+            //            cout<<"filling mt histo DONE"<<endl;
           }
         }
       }
 
-//      cout<<"mjj"<<endl;
+      //      cout<<"mjj"<<endl;
       //Mjj
       if (min2Jets(treeReader, branchDict, entry))
       {
@@ -408,12 +418,12 @@ void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
       }
 
       //MET
-//      cout<<"MET"<<endl;
+      //      cout<<"MET"<<endl;
       histos["MET"]->Fill(MET);
     }
   }
 
-//  cout << "entry loop done" << endl;
+  //  cout << "entry loop done" << endl;
 
   for (int i = 0; (unsigned)i < variables.size(); i++)
   {
@@ -425,8 +435,8 @@ void ptEtaPhiMjjMt(ExRootTreeReader *treeReader,
 
   histos["mass"]->Write();
   histos["MET"]->Write();
-//  // cout << endl;
-//  cout << "Calculating Pt, eta, phi, mjj and mt DONE." << endl;
+  //  // cout << endl;
+  //  cout << "Calculating Pt, eta, phi, mjj and mt DONE." << endl;
 }
 
 void drawMultiHistos(TObjArray histos, string title, string particleType)
@@ -447,11 +457,15 @@ void drawMultiHistos(TObjArray histos, string title, string particleType)
 void drawLeptonCount(ExRootTreeReader *treeReader,
                      vector<int> ns,
                      map<string, TClonesArray *> branchDict,
+                     vector<bool> &vbfCutsArr,
+                     vector<bool> &cutsArr,
                      bool (*filter)(ExRootTreeReader *,
                                     map<string, TClonesArray *>,
-                                    int))
+                                    int,
+                                    vector<bool>&,
+                                    vector<bool>&))
 {
-//  cout << "draw lepton count" << endl;
+  //  cout << "draw lepton count" << endl;
   vector<string> particleTypes = {"lepton", "electron", "muon", "tau"};
   // map<string, TObjArray> histos;
 
@@ -462,7 +476,7 @@ void drawLeptonCount(ExRootTreeReader *treeReader,
 
   for (int i = 0; (unsigned)i < ns.size(); i++)
   {
-    map<string, TH1 *> histoOutput = nLeptonAnalysis(treeReader, ns[i], branchDict, filter);
+    map<string, TH1 *> histoOutput = nLeptonAnalysis(treeReader, ns[i], branchDict, vbfCutsArr, cutsArr, filter);
 
     for (int j = 0; (unsigned)j < particleTypes.size(); j++)
     {

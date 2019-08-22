@@ -97,11 +97,6 @@ bool min2Jets(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDi
   return branchDict["Jet"]->GetEntries() >= 2;
 }
 
-bool noFilter(ExRootTreeReader *treeReader,
-              map<string, TClonesArray *> branchDict,
-              int entry)
-{
-  return true;
-}
+
 
 #endif 

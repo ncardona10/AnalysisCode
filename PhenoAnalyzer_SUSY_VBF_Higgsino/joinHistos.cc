@@ -6,10 +6,35 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
-  TFile *HistoOutputFile = new TFile("FinalPlots.root", "RECREATE");
-  TDirectory *outputDir = HistoOutputFile->mkdir("finalPlots");
+  cout<<"creating output file"<<endl;
+  TFile *HistoOutputFile = new TFile("/home/n.cardonac/AnalysisCode/PhenoAnalyzer_SUSY_VBF_Higgsino/finalHistos.root", "RECREATE");
+  // TDirectory *outputDir = HistoOutputFile->mkdir("finalPlots");
 
-  TFile *sfile = new TFile("Test.root");
+
+  TString inputFolder = "/home/n.cardonac/RunPhenoCodes/outputfiles2copy2/";
+
+  vector<TString> folderNames = {
+                                 "m_n2_100_c1_80_n1_60",
+                                 "m_n2_100_c1_75_n1_50",
+                                 "m_n2_400_c1_385_n1_370",
+                                 "m_n2_200_c1_175_n1_150",
+                                 "wz",
+                                 "zz",
+                                 "ww",
+                                 "w+jets",
+                                 "z+jets",
+                                 "ttbar"
+                                 };
+
+  map<TString, TFile *> sfiles;
+
+  cout<<"reading input files..."<<endl;
+
+  for (int i = 0; (unsigned)i < folderNames.size(); i++)
+  {
+    sfiles[folderNames[i]] = new TFile(inputFolder + folderNames[i] + "/" + folderNames[i] + "_nocut-1.root","READ");
+    cout<<"reading file: "<< inputFolder + folderNames[i] + "/" + folderNames[i] + "_nocut-1.root" <<endl;
+  }
 
   vector<TString> dirNames = {"nLeptons",
                               "VBF_Cuts",
@@ -18,9 +43,16 @@ int main(int argc, char const *argv[])
                               "single_mu",
                               "single_tau"};
 
-  sfile->cd("nLeptons");
+  //create ouput folders in output root
+  cout<<"creating output subdirectories"<<endl;
+  HistoOutputFile->cd();
+  map<TString, TDirectory *> outputDirs;
+  for (int i = 0; (unsigned)i < dirNames.size(); i++)
+  {
+    outputDirs[dirNames[i]] = HistoOutputFile->mkdir(dirNames[i]);
+  }
 
-  //get histogram names
+  //histogram names
   vector<TString> histoNames = {"# of leptons PT < 15",
                                 "# of electrons PT < 15",
                                 "# of muons PT < 15",
@@ -60,42 +92,101 @@ int main(int argc, char const *argv[])
                                 "Mjj",
                                 "MET"};
 
-  for (int i = 0; (unsigned)i < histoNames.size(); i++)
+  /*
+
+  for every folder( ww,wz,...):
+    for every directory (nleptons,...):
+      for every histogram in folderhistogram in folder:
+        get histogram
+        change name to folder
+      plot 
+
+
+  */
+
+  for (int directory_i = 0; (unsigned)directory_i < dirNames.size(); directory_i++)
   {
-    cout << i * 100.0 / histoNames.size() << endl;
-    ;
-
-    TObjArray histos;
-
-    for (int j = 0; (unsigned)j < dirNames.size(); j++)
+    for (int histo_i = 0; (unsigned)histo_i < histoNames.size(); histo_i++)
     {
 
-      TString dirName = dirNames[j];
+      cout << dirNames[directory_i] << " " << histoNames[histo_i] << endl;
+      TObjArray histos;
 
-      sfile->cd(dirName);
+      for (int folder_i = 0; (unsigned)folder_i < folderNames.size(); folder_i++)
+      {
+        cout<<"changing to "<< folderNames[folder_i]<< " directory and "<<dirNames[directory_i]<<" subfolder"  <<endl;
+        sfiles[folderNames[folder_i]]->cd(dirNames[directory_i]);
 
-      TH1F *histo = (TH1F *)sfile->Get(dirName + "/" + histoNames[i]);
+        cout<<"getting histogram info"<<endl;
+        TH1F *histo = (TH1F *)sfiles[folderNames[folder_i]]->Get(dirNames[directory_i] + "/" + histoNames[histo_i]);
 
-      histo->SetTitle(dirName);
-      histo->SetName(dirName);
 
-      histos.AddLast(histo);
+        cout<<"setting title and name"<<endl;
+        histo->SetTitle(folderNames[folder_i]);
+        histo->SetName(folderNames[folder_i]);
+
+        cout<<"adding to histogram list"<<endl;
+        histos.AddLast(histo);
+      }
+
+
+      outputDirs[dirNames[directory_i]]->cd();
+
+      TCanvas *cl = new TCanvas(dirNames[directory_i] + " " + histoNames[histo_i],dirNames[directory_i] + " " +  histoNames[histo_i], 600, 500);
+
+      // cl->Divide(2,2); //create subplots
+
+      string histoNameString = (string)histoNames[histo_i];
+      Draw_Normalised(histos, (TPad *)cl->cd(0), true, histoNameString);
+
+      cl->Write();
     }
-
-    outputDir->cd();
-
-    TCanvas *cl = new TCanvas(histoNames[i], histoNames[i], 600, 500);
-
-    // cl->Divide(2,2); //create subplots
-
-    string histoNameString = (string)histoNames[i];
-    Draw_Normalised(histos, (TPad *)cl->cd(0), false, histoNameString);
-
-    cl->Write();
   }
 
+  // HistoOutputFile->Close();
+
+  // sfile->Close();
+  // cout << endl;
+
+  // for (int i = 0; (unsigned)i < histoNames.size(); i++)
+  // {
+  //   cout << i * 100.0 / histoNames.size() << endl;
+
+  //   TObjArray histos;
+
+  //   for (int j = 0; (unsigned)j < dirNames.size(); j++)
+  //   {
+
+  //     TString dirName = dirNames[j];
+
+  //     sfile->cd(dirName);
+
+  //     TH1F *histo = (TH1F *)sfile->Get(dirName + "/" + histoNames[i]);
+
+  //     histo->SetTitle(dirName);
+  //     histo->SetName(dirName);
+
+  //     histos.AddLast(histo);
+  //   }
+
+  //   outputDir->cd();
+
+  //   TCanvas *cl = new TCanvas(histoNames[i], histoNames[i], 600, 500);
+
+  //   // cl->Divide(2,2); //create subplots
+
+  //   string histoNameString = (string)histoNames[i];
+  //   Draw_Normalised(histos, (TPad *)cl->cd(0), true, histoNameString);
+
+  //   cl->Write();
+  // }
+
   HistoOutputFile->Close();
-  sfile->Close();
-  cout << endl;
+
+  for (int i = 0; (unsigned)i < folderNames.size(); i++)
+  {
+    sfiles[folderNames[i]]->Close();
+  }
+  cout << "DONE" << endl;
   return 0;
 }

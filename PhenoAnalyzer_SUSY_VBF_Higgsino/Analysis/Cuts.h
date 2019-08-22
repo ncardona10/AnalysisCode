@@ -10,10 +10,23 @@
 #include "../DelphesFunctions.h"
 #include "./Physics.h"
 
+bool noFilter(ExRootTreeReader *treeReader,
+              map<string, TClonesArray *> branchDict,
+              int entry,
+              vector<bool> &vbfCutsArr,
+              vector<bool> &cutsArr)
+{
+  return true;
+}
+
 bool vbfCut(ExRootTreeReader *treeReader,
             map<string, TClonesArray *> branchDict,
-            int entry)
+            int entry,
+            vector<bool> &vbfCutsArr,
+            vector<bool> &cutsArr)
+
 {
+  bool ans = false;
 
   // mjj > 500 #
   // eta_lead * eta_subLead < 0 #
@@ -39,25 +52,27 @@ bool vbfCut(ExRootTreeReader *treeReader,
     bool pTBothBool = leadingJet->PT > 30.0 && subLeadingJet->PT > 30.0;
     bool etaBelow5 = abs(leadingJet->Eta) < 5.0 && abs(subLeadingJet->Eta) < 5.0;
 
-    return mjjBool && deltaMultipl && deltaEtaBool && pTBothBool && etaBelow5;
+    ans = mjjBool && deltaMultipl && deltaEtaBool && pTBothBool && etaBelow5;
   }
-  else
-  {
-    return false;
-  }
+
+  vbfCutsArr[entry] = ans;
+  return ans;
 }
 
 bool cuts(ExRootTreeReader *treeReader,
           map<string, TClonesArray *> branchDict,
-          int entry)
+          int entry,
+          vector<bool> &vbfCutsArr,
+          vector<bool> &cutsArr)
 {
-  // needs to meet vbf 
+  // needs to meet vbf
   // met>100
   // # bjets = 0
 
   treeReader->ReadEntry(entry);
+  bool ans = false;
 
-  if (vbfCut(treeReader, branchDict, entry))
+  if (vbfCutsArr[entry])
   {
     bool metBool = met(treeReader, branchDict, entry) > 100;
 
@@ -75,27 +90,22 @@ bool cuts(ExRootTreeReader *treeReader,
         }
       }
 
-      return bJetsBool;
+      ans = bJetsBool;
     }
+  }
 
-    else
-    {
-      return false;
-    }
-  }
-  else
-  {
-    return false;
-  }
+  cutsArr[entry] = ans;
+  return ans;
 }
-
 
 bool singleParticle(ExRootTreeReader *treeReader,
                     map<string, TClonesArray *> branchDict,
                     int entry,
                     int n_electrons,
                     int n_muon,
-                    int n_tau)
+                    int n_tau,
+                    vector<bool> &vbfCutsArr,
+                    vector<bool> &cutsArr)
 {
 
   /*
@@ -111,11 +121,13 @@ bool singleParticle(ExRootTreeReader *treeReader,
       abs(eta)<2.4
 
   */
+  // cout << n_electrons << " " << n_muon << " "
+  //      << " " << n_tau << " " << entry << endl;
 
   treeReader->ReadEntry(entry);
 
   // vbfcut & cuts
-  if (cuts(treeReader, branchDict, entry))
+  if (cutsArr[entry])
   {
     // verify electron condition
     int nElectrons = 0;
@@ -127,6 +139,7 @@ bool singleParticle(ExRootTreeReader *treeReader,
       {
         nElectrons++;
       }
+      i++;
     }
 
     if (nElectrons == n_electrons)
@@ -134,13 +147,14 @@ bool singleParticle(ExRootTreeReader *treeReader,
       //verify number of muons
       int nMuons = 0;
       int i = 0;
-      while (nMuons == 0 && i < branchDict["Muon"]->GetEntries())
+      while (nMuons <2 && i < branchDict["Muon"]->GetEntries())
       {
         Muon *muon = (Muon *)branchDict["Muon"]->At(i);
         if (muon->PT >= 5 && abs(muon->Eta) < 2.4)
         {
           nMuons++;
         }
+        i++;
       }
 
       if (nMuons == n_muon)
@@ -148,7 +162,7 @@ bool singleParticle(ExRootTreeReader *treeReader,
         //verify number of taus
         int nTaus = 0;
         int i = 0;
-        while (nTaus == 0 && i < branchDict["Jet"]->GetEntries())
+        while (nTaus <2 && i < branchDict["Jet"]->GetEntries())
         {
           Jet *jet = (Jet *)branchDict["Jet"]->At(i);
           if (jet->TauTag == 1)
@@ -158,6 +172,7 @@ bool singleParticle(ExRootTreeReader *treeReader,
               nTaus++;
             }
           }
+          i++;
         }
         return nTaus == n_tau;
       }
@@ -179,21 +194,27 @@ bool singleParticle(ExRootTreeReader *treeReader,
 
 bool cut_e(ExRootTreeReader *treeReader,
            map<string, TClonesArray *> branchDict,
-           int entry)
+           int entry,
+           vector<bool> &vbfCutsArr,
+           vector<bool> &cutsArr)
 {
-  return singleParticle(treeReader, branchDict, entry, 1, 0, 0);
+  return singleParticle(treeReader, branchDict, entry, 1, 0, 0, vbfCutsArr, cutsArr);
 }
 
 bool cut_mu(ExRootTreeReader *treeReader,
             map<string, TClonesArray *> branchDict,
-            int entry)
+            int entry,
+            vector<bool> &vbfCutsArr,
+            vector<bool> &cutsArr)
 {
-  return singleParticle(treeReader, branchDict, entry, 0, 1, 0);
+  return singleParticle(treeReader, branchDict, entry, 0, 1, 0, vbfCutsArr, cutsArr);
 }
 
 bool cut_tau(ExRootTreeReader *treeReader,
              map<string, TClonesArray *> branchDict,
-             int entry)
+             int entry,
+             vector<bool> &vbfCutsArr,
+             vector<bool> &cutsArr)
 {
-  return singleParticle(treeReader, branchDict, entry, 0, 0, 1);
+  return singleParticle(treeReader, branchDict, entry, 0, 0, 1, vbfCutsArr, cutsArr);
 }
