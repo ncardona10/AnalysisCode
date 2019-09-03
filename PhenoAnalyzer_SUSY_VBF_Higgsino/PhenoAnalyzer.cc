@@ -89,20 +89,19 @@ int main(int argc, char *argv[])
   cout << "nLeptons" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,noFilter);
   ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr,noFilter);
-
   cout << "nLeptons done." << endl;
-
-  VBF_CutsDirectory->cd();
-  cout << "VBF_Cuts" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, vbfCut);
-  ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, vbfCut);
-  cout << "VBF_Cuts done." << endl;
 
   CutsDirectory->cd();
   cout << "Extra_cuts" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cuts);
   ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cuts);
   cout << "Extra cuts done." << endl;
+  
+  VBF_CutsDirectory->cd();
+  cout << "VBF_Cuts" << endl;
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, vbfCut);
+  ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, vbfCut);
+  cout << "VBF_Cuts done." << endl;
 
   single_e->cd();
   cout << "single_e" << endl;

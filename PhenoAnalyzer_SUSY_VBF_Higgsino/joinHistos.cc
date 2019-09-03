@@ -8,10 +8,9 @@ int main(int argc, char const *argv[])
 {
   cout<<"creating output file"<<endl;
   TFile *HistoOutputFile = new TFile("/home/n.cardonac/AnalysisCode/PhenoAnalyzer_SUSY_VBF_Higgsino/finalHistos.root", "RECREATE");
-  // TDirectory *outputDir = HistoOutputFile->mkdir("finalPlots");
 
 
-  TString inputFolder = "/home/n.cardonac/RunPhenoCodes/outputfiles2copy2/";
+  TString inputFolder = "/home/n.cardonac/RunPhenoCodes/outputfiles3/";
 
   vector<TString> folderNames = {
                                  "m_n2_100_c1_80_n1_60",
@@ -134,7 +133,7 @@ int main(int argc, char const *argv[])
 
       TCanvas *cl = new TCanvas(dirNames[directory_i] + " " + histoNames[histo_i],dirNames[directory_i] + " " +  histoNames[histo_i], 600, 500);
 
-      // cl->Divide(2,2); //create subplots
+      // cl->Divide(2,2); //create subplots if needed
 
       string histoNameString = (string)histoNames[histo_i];
       Draw_Normalised(histos, (TPad *)cl->cd(0), true, histoNameString);
@@ -143,43 +142,6 @@ int main(int argc, char const *argv[])
     }
   }
 
-  // HistoOutputFile->Close();
-
-  // sfile->Close();
-  // cout << endl;
-
-  // for (int i = 0; (unsigned)i < histoNames.size(); i++)
-  // {
-  //   cout << i * 100.0 / histoNames.size() << endl;
-
-  //   TObjArray histos;
-
-  //   for (int j = 0; (unsigned)j < dirNames.size(); j++)
-  //   {
-
-  //     TString dirName = dirNames[j];
-
-  //     sfile->cd(dirName);
-
-  //     TH1F *histo = (TH1F *)sfile->Get(dirName + "/" + histoNames[i]);
-
-  //     histo->SetTitle(dirName);
-  //     histo->SetName(dirName);
-
-  //     histos.AddLast(histo);
-  //   }
-
-  //   outputDir->cd();
-
-  //   TCanvas *cl = new TCanvas(histoNames[i], histoNames[i], 600, 500);
-
-  //   // cl->Divide(2,2); //create subplots
-
-  //   string histoNameString = (string)histoNames[i];
-  //   Draw_Normalised(histos, (TPad *)cl->cd(0), true, histoNameString);
-
-  //   cl->Write();
-  // }
 
   HistoOutputFile->Close();
 

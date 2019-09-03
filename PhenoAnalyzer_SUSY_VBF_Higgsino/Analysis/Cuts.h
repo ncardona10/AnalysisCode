@@ -36,23 +36,27 @@ bool vbfCut(ExRootTreeReader *treeReader,
 
   treeReader->ReadEntry(entry);
 
-  // MINIMUM 2 JETS!!
-
-  bool min2JetsBool = min2Jets(treeReader, branchDict, entry);
-
-  if (min2JetsBool)
+  if (cutsArr[entry])
   {
 
-    Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
-    Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
+    // MINIMUM 2 JETS!!
 
-    bool mjjBool = mjj(treeReader, branchDict, entry) > 500;
-    bool deltaMultipl = (leadingJet->Eta) * (subLeadingJet->Eta) < 0;
-    bool deltaEtaBool = deltaEta(leadingJet, subLeadingJet) > 4.0;
-    bool pTBothBool = leadingJet->PT > 30.0 && subLeadingJet->PT > 30.0;
-    bool etaBelow5 = abs(leadingJet->Eta) < 5.0 && abs(subLeadingJet->Eta) < 5.0;
+    bool min2JetsBool = min2Jets(treeReader, branchDict, entry);
 
-    ans = mjjBool && deltaMultipl && deltaEtaBool && pTBothBool && etaBelow5;
+    if (min2JetsBool)
+    {
+
+      Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
+      Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
+
+      bool mjjBool = mjj(treeReader, branchDict, entry) > 500;
+      bool deltaMultipl = (leadingJet->Eta) * (subLeadingJet->Eta) < 0;
+      bool deltaEtaBool = deltaEta(leadingJet, subLeadingJet) > 4.0;
+      bool pTBothBool = leadingJet->PT > 30.0 && subLeadingJet->PT > 30.0;
+      bool etaBelow5 = abs(leadingJet->Eta) < 5.0 && abs(subLeadingJet->Eta) < 5.0;
+
+      ans = mjjBool && deltaMultipl && deltaEtaBool && pTBothBool && etaBelow5;
+    }
   }
 
   vbfCutsArr[entry] = ans;
@@ -72,27 +76,27 @@ bool cuts(ExRootTreeReader *treeReader,
   treeReader->ReadEntry(entry);
   bool ans = false;
 
-  if (vbfCutsArr[entry])
+  // if (vbfCutsArr[entry])
+  // {
+  bool metBool = met(treeReader, branchDict, entry) > 100;
+
+  if (metBool)
   {
-    bool metBool = met(treeReader, branchDict, entry) > 100;
+    bool bJetsBool = true;
 
-    if (metBool)
+    for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
     {
-      bool bJetsBool = true;
-
-      for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
+      Jet *jet = (Jet *)branchDict["Jet"]->At(leaf);
+      if (jet->BTag == 1)
       {
-        Jet *jet = (Jet *)branchDict["Jet"]->At(leaf);
-        if (jet->BTag == 1)
-        {
-          bJetsBool = false;
-          break;
-        }
+        bJetsBool = false;
+        break;
       }
-
-      ans = bJetsBool;
     }
+
+    ans = bJetsBool;
   }
+  // }
 
   cutsArr[entry] = ans;
   return ans;
@@ -147,7 +151,7 @@ bool singleParticle(ExRootTreeReader *treeReader,
       //verify number of muons
       int nMuons = 0;
       int i = 0;
-      while (nMuons <2 && i < branchDict["Muon"]->GetEntries())
+      while (nMuons < 2 && i < branchDict["Muon"]->GetEntries())
       {
         Muon *muon = (Muon *)branchDict["Muon"]->At(i);
         if (muon->PT >= 5 && abs(muon->Eta) < 2.4)
@@ -162,7 +166,7 @@ bool singleParticle(ExRootTreeReader *treeReader,
         //verify number of taus
         int nTaus = 0;
         int i = 0;
-        while (nTaus <2 && i < branchDict["Jet"]->GetEntries())
+        while (nTaus < 2 && i < branchDict["Jet"]->GetEntries())
         {
           Jet *jet = (Jet *)branchDict["Jet"]->At(i);
           if (jet->TauTag == 1)
