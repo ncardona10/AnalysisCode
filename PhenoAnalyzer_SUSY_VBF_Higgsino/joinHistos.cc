@@ -51,6 +51,9 @@ int main(int argc, char const *argv[])
     outputDirs[dirNames[i]] = HistoOutputFile->mkdir(dirNames[i]);
   }
 
+  
+
+
   //histogram names
   vector<TString> histoNames = {"# of leptons PT < 15",
                                 "# of electrons PT < 15",
@@ -122,6 +125,7 @@ int main(int argc, char const *argv[])
 
         cout<<"setting title and name"<<endl;
         histo->SetTitle(folderNames[folder_i]);
+        
         histo->SetName(folderNames[folder_i]);
 
         cout<<"adding to histogram list"<<endl;

@@ -37,11 +37,17 @@ int main(int argc, char *argv[])
 
   // directory to store the histograms
   TDirectory *nLeptonsDirectory = HistoOutputFile->mkdir("nLeptons");
+
+  TDirectory *single_e = HistoOutputFile->mkdir("single_e_nocuts");
+  TDirectory *single_mu = HistoOutputFile->mkdir("single_mu_nocuts");
+  TDirectory *single_tau = HistoOutputFile->mkdir("single_tau_nocuts");
+
   TDirectory *VBF_CutsDirectory = HistoOutputFile->mkdir("VBF_Cuts");
   TDirectory *CutsDirectory = HistoOutputFile->mkdir("Extra_Cuts");
-  TDirectory *single_e = HistoOutputFile->mkdir("single_e");
-  TDirectory *single_mu = HistoOutputFile->mkdir("single_mu");
-  TDirectory *single_tau = HistoOutputFile->mkdir("single_tau");
+
+  TDirectory *single_e = HistoOutputFile->mkdir("single_e_cuts");
+  TDirectory *single_mu = HistoOutputFile->mkdir("single_mu_cuts");
+  TDirectory *single_tau = HistoOutputFile->mkdir("single_tau_cuts");
 
   cout << "processing.." << endl;
 
@@ -75,11 +81,15 @@ int main(int argc, char *argv[])
   // boolean mask to avoid over computation
   vector<bool> vbfCutsArr;
   vector<bool> cutsArr;
+  vector<bool> vbfCutsArr_nocuts;
+  vector<bool> cutsArr_nocuts;
 
   for(int i = 0 ; (unsigned) i < treeReader->GetEntries(); i ++)
   {
     vbfCutsArr.push_back(false);
     cutsArr.push_back(false);
+    vbfCutsArr_nocuts.push_back(false);
+    cutsArr_nocuts.push_back(false);
   }
 
   // open output file
@@ -91,6 +101,28 @@ int main(int argc, char *argv[])
   ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr,noFilter);
   cout << "nLeptons done." << endl;
 
+  // -----------------------------------------------------------------------------------------
+  // need a different boolean array to avoid filtering problems
+
+  single_e_nocuts->cd();
+  cout << "single_e_nocuts" << endl;
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_e);
+  ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_e);
+  cout << "single_e_nocuts done." << endl;
+
+  single_mu_nocuts->cd();
+  cout << "single_mu_nocuts" << endl;
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,cut_mu);
+  ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,cut_mu);
+  cout << "single_mu_nocuts done." << endl;
+
+  single_tau_nocuts->cd();
+  cout << "single_tau_nocuts" << endl;
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_tau);
+  ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_tau);
+  cout << "single_tau_nocuts done." << endl;
+
+  // -----------------------------------------------------------------------------------------
   CutsDirectory->cd();
   cout << "Extra_cuts" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cuts);
@@ -103,23 +135,23 @@ int main(int argc, char *argv[])
   ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, vbfCut);
   cout << "VBF_Cuts done." << endl;
 
-  single_e->cd();
-  cout << "single_e" << endl;
+  single_e_cuts->cd();
+  cout << "single_e_cuts" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cut_e);
   ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cut_e);
-  cout << "single_e done." << endl;
+  cout << "single_e_cuts done." << endl;
 
-  single_mu->cd();
-  cout << "single_mu" << endl;
+  single_mu_cuts->cd();
+  cout << "single_mu_cuts" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,cut_mu);
   ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr,cut_mu);
-  cout << "single_mu done." << endl;
+  cout << "single_mu_cuts done." << endl;
 
-  single_tau->cd();
-  cout << "single_tau" << endl;
+  single_tau_cuts->cd();
+  cout << "single_tau_cuts" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cut_tau);
   ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cut_tau);
-  cout << "single_tau done." << endl;
+  cout << "single_tau_cuts done." << endl;
 
   // close output file
   cout << "closing output file" << endl;

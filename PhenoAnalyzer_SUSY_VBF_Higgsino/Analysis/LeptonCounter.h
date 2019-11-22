@@ -394,17 +394,20 @@ void ptEtaPhiMjjMt(
 
           if (elecOverlapIndex == -1 && muonOverlapIndex == -1)
           {
-            //            cout<<"filling pt eta and phi histos"<<endl;
-            histos["ptjet"]->Fill(jet->PT);
-            histos["etajet"]->Fill(jet->Eta);
-            histos["phijet"]->Fill(normalizedDphi(jet->Phi));
-            //            cout<<"filling pt eta and phi histos DONE"<<endl;
+            // reconstruction cuts
+            if(jet->PT>30.0 && abs(jet->eta) <5.0){
+              //            cout<<"filling pt eta and phi histos"<<endl;
+              histos["ptjet"]->Fill(jet->PT);
+              histos["etajet"]->Fill(jet->Eta);
+              histos["phijet"]->Fill(normalizedDphi(jet->Phi));
+              //            cout<<"filling pt eta and phi histos DONE"<<endl;
 
-            //            cout<<"filling mt histo"<<endl;
-            //Doesnt make sense but needed to keep code symmetry
-            double mtval = mt(jet->PT, MET, jet->Phi - METPointer->Phi);
-            histos["Mtjet"]->Fill(mtval);
-            //            cout<<"filling mt histo DONE"<<endl;
+              //            cout<<"filling mt histo"<<endl;
+              //Doesnt make sense but needed to keep code symmetry
+              double mtval = mt(jet->PT, MET, jet->Phi - METPointer->Phi);
+              histos["Mtjet"]->Fill(mtval);
+              //            cout<<"filling mt histo DONE"<<endl;
+            }
           }
         }
       }

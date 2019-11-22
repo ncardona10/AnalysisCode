@@ -29,7 +29,7 @@ bool overlap(double dr)
 
 double normalizedDphi(double phi)
 {
-  const double PI = 3.141592653589793238463;
+  const double PI = TMath::Pi();
   double twoPI = 2.0 * PI;
   if (phi < -PI)
   {
@@ -39,8 +39,9 @@ double normalizedDphi(double phi)
   {
     phi = twoPI - phi;
   }
-  else
-    phi = TMath::Abs(phi);
+  // else{
+  //   phi = TMath::Abs(phi);
+  // }
   return phi;
 }
 
@@ -93,8 +94,17 @@ bool min2Jets(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDi
 {
   //get entry
   treeReader->ReadEntry(entry);
+  
+  Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
+  Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
 
-  return branchDict["Jet"]->GetEntries() >= 2;
+  bool ans = false;
+  if(branchDict["Jet"]->GetEntries() >= 2){
+    if(leadingJet->PT>30 && abs(leadingJet->eta)<5 && subLeadingJet->PT>30 && abs(subLeadingJet->eta)<5){
+      ans = true; 
+    }
+  }
+  return ans;
 }
 
 

@@ -362,43 +362,6 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
 
        
 
-        // if ((fill_muon1 == false) && (fill_muon2 == false) && (fill_muon3 == false) && (fill_muon4 == false))
-        // {
-        //   hadronMuonsTLV[0] = muon_i;
-        //   fill_muon1 = true;
-        //   nmuon_counter++;
-        //   continue;
-        // }
-        // if ((fill_muon1 == true) && (fill_muon2 == false) && (fill_muon3 == false) && (fill_muon4 == false))
-        // {
-        //   if (muon_i.DeltaR(hadronMuonsTLV[0]) > 0.3)
-        //   {
-        //     hadronMuonsTLV[1] = muon_i;
-        //     fill_muon2 = true;
-        //     nmuon_counter++;
-        //     continue;
-        //   }
-        // }
-        // if ((fill_muon1 == true) && (fill_muon2 == true) && (fill_muon3 == false) && (fill_muon4 == false))
-        // {
-        //   if ((muon_i.DeltaR(hadronMuonsTLV[1]) > 0.3) && (muon_i.DeltaR(hadronMuonsTLV[0]) > 0.3))
-        //   {
-        //     hadronMuonsTLV[2] = muon_i;
-        //     fill_muon3 = true;
-        //     nmuon_counter++;
-        //     continue;
-        //   }
-        // }
-        // if ((fill_muon1 == true) && (fill_muon2 == true) && (fill_muon3 == true) && (fill_muon4 == false))
-        // {
-        //   if ((muon_i.DeltaR(hadronMuonsTLV[1]) > 0.3) && (muon_i.DeltaR(hadronMuonsTLV[0]) > 0.3) && (muon_i.DeltaR(hadronMuonsTLV[2]) > 0.3))
-        //   {
-        //     hadronMuonsTLV[3] = muon_i;
-        //     fill_muon4 = true;
-        //     nmuon_counter++;
-        //     continue;
-        //   }
-        // }
       }
 
 
@@ -1010,28 +973,28 @@ PhenoAnalysis::PhenoAnalysis(ExRootTreeReader *treeReader, TFile *theFile, TDire
     {
       pass_cuts[8] = 1;
     }
-    // // muTau kinematics
-    // if ((pass_cuts[5] == 1) && (nmuon_counter == 1) && (ntau_counter == 1) && (nelec_counter == 0) && (pairParticleTLVDict["muTau_TLV"][0].Pt() > configDict["tau_pt_cut"]) && (pairParticleTLVDict["muTau_TLV"][1].Pt() > configDict["muon_pt_cut"]) && (abs(pairParticleTLVDict["muTau_TLV"][0].Eta()) < configDict["tau_eta_cut"]) && (abs(pairParticleTLVDict["muTau_TLV"][1].Eta()) < configDict["muon_eta_cut"]) && (muTau_mass_i > configDict["muTau_mass_input"]))
-    // {
-    //   pass_cuts[9] = 1;
-    // }
-    // // muMu kinematics
-    // if ((pass_cuts[5] == 1) && (nmuon_counter == 2) && (ntau_counter == 0) && (nelec_counter == 0) && (pairParticleTLVDict["muMu_TLV"][0].Pt() > configDict["muon_pt_cut"]) && (pairParticleTLVDict["muMu_TLV"][1].Pt() > configDict["muon_pt_cut"]) && (abs(pairParticleTLVDict["muMu_TLV"][0].Eta()) < configDict["muon_eta_cut"]) && (abs(pairParticleTLVDict["muMu_TLV"][1].Eta()) < configDict["muon_eta_cut"]) && (muMu_mass_i > configDict["muMu_mass_input"]))
-    // {
-    //   pass_cuts[10] = 1;
-    // }
-    // // tauTau kinematics
-    // if ((pass_cuts[5] == 1) && (ntau_counter == 2) && (nmuon_counter == 0) && (nelec_counter == 0) && (pairParticleTLVDict["tauTau_TLV"][0].Pt() > configDict["tau_pt_cut"]) && (pairParticleTLVDict["tauTau_TLV"][1].Pt() > configDict["tau_pt_cut"]) && (abs(pairParticleTLVDict["tauTau_TLV"][0].Eta()) < configDict["tau_eta_cut"]) && (abs(pairParticleTLVDict["tauTau_TLV"][1].Eta()) < configDict["tau_eta_cut"]) && (tauTau_mass_i > configDict["tauTau_mass_input"]))
-    // {
-    //   pass_cuts[11] = 1;
-    // }
-    // // elecTau kinematics
-    // if ((pass_cuts[5] == 1) && (nelec_counter == 1) && (ntau_counter == 1) && (nmuon_counter == 0) && (pairParticleTLVDict["elecTau_TLV"][0].Pt() > configDict["elec_pt_cut"]) && (pairParticleTLVDict["elecTau_TLV"][1].Pt() > configDict["tau_pt_cut"]) && (abs(pairParticleTLVDict["elecTau_TLV"][0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairParticleTLVDict["elecTau_TLV"][1].Eta()) < configDict["tau_eta_cut"]) && (elecTau_mass_i > configDict["elecTau_mass_input"]))
-    // {
-    //   pass_cuts[12] = 1;
-    // }
-    // // elecElec kinematics
-    // if ((pass_cuts[5] == 1) && (nelec_counter == 2) && (ntau_counter == 0) && (nmuon_counter == 0) && (pairParticleTLVDict["elecElec_TLV"][0].Pt() > configDict["elec_pt_cut"]) && (pairParticleTLVDict["elecElec_TLV"][1].Pt() > configDict["elec_pt_cut"]) && (abs(pairParticleTLVDict["elecElec_TLV"][0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairParticleTLVDict["elecElec_TLV"][1].Eta()) < configDict["elec_eta_cut"]) && (elecElec_mass_i > configDict["elecElec_mass_input"]))
+    // muTau kinematics
+    if ((pass_cuts[5] == 1) && (nmuon_counter == 1) && (ntau_counter == 1) && (nelec_counter == 0) && (pairParticleTLVDict["muTau_TLV"][0].Pt() > configDict["tau_pt_cut"]) && (pairParticleTLVDict["muTau_TLV"][1].Pt() > configDict["muon_pt_cut"]) && (abs(pairParticleTLVDict["muTau_TLV"][0].Eta()) < configDict["tau_eta_cut"]) && (abs(pairParticleTLVDict["muTau_TLV"][1].Eta()) < configDict["muon_eta_cut"]) && (muTau_mass_i > configDict["muTau_mass_input"]))
+    {
+      pass_cuts[9] = 1;
+    }
+    // muMu kinematics
+    if ((pass_cuts[5] == 1) && (nmuon_counter == 2) && (ntau_counter == 0) && (nelec_counter == 0) && (pairParticleTLVDict["muMu_TLV"][0].Pt() > configDict["muon_pt_cut"]) && (pairParticleTLVDict["muMu_TLV"][1].Pt() > configDict["muon_pt_cut"]) && (abs(pairParticleTLVDict["muMu_TLV"][0].Eta()) < configDict["muon_eta_cut"]) && (abs(pairParticleTLVDict["muMu_TLV"][1].Eta()) < configDict["muon_eta_cut"]) && (muMu_mass_i > configDict["muMu_mass_input"]))
+    {
+      pass_cuts[10] = 1;
+    }
+    // tauTau kinematics
+    if ((pass_cuts[5] == 1) && (ntau_counter == 2) && (nmuon_counter == 0) && (nelec_counter == 0) && (pairParticleTLVDict["tauTau_TLV"][0].Pt() > configDict["tau_pt_cut"]) && (pairParticleTLVDict["tauTau_TLV"][1].Pt() > configDict["tau_pt_cut"]) && (abs(pairParticleTLVDict["tauTau_TLV"][0].Eta()) < configDict["tau_eta_cut"]) && (abs(pairParticleTLVDict["tauTau_TLV"][1].Eta()) < configDict["tau_eta_cut"]) && (tauTau_mass_i > configDict["tauTau_mass_input"]))
+    {
+      pass_cuts[11] = 1;
+    }
+    // elecTau kinematics
+    if ((pass_cuts[5] == 1) && (nelec_counter == 1) && (ntau_counter == 1) && (nmuon_counter == 0) && (pairParticleTLVDict["elecTau_TLV"][0].Pt() > configDict["elec_pt_cut"]) && (pairParticleTLVDict["elecTau_TLV"][1].Pt() > configDict["tau_pt_cut"]) && (abs(pairParticleTLVDict["elecTau_TLV"][0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairParticleTLVDict["elecTau_TLV"][1].Eta()) < configDict["tau_eta_cut"]) && (elecTau_mass_i > configDict["elecTau_mass_input"]))
+    {
+      pass_cuts[12] = 1;
+    }
+    // elecElec kinematics
+    if ((pass_cuts[5] == 1) && (nelec_counter == 2) && (ntau_counter == 0) && (nmuon_counter == 0) && (pairParticleTLVDict["elecElec_TLV"][0].Pt() > configDict["elec_pt_cut"]) && (pairParticleTLVDict["elecElec_TLV"][1].Pt() > configDict["elec_pt_cut"]) && (abs(pairParticleTLVDict["elecElec_TLV"][0].Eta()) < configDict["elec_eta_cut"]) && (abs(pairParticleTLVDict["elecElec_TLV"][1].Eta()) < configDict["elec_eta_cut"]) && (elecElec_mass_i > configDict["elecElec_mass_input"]))
     {
       pass_cuts[13] = 1;
     }

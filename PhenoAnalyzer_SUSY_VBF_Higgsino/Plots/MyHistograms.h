@@ -27,7 +27,7 @@ void Draw_Normalised(TObjArray histos,
   }
 
   TObjArray RootFiles;
-  std::vector<std::string> legends_str;
+  std::vector<string> legends_str;
   std::vector<int> colours = {920,
                               632,
                               416,
@@ -40,10 +40,24 @@ void Draw_Normalised(TObjArray histos,
                               28,
                               900}; //Colors: https://root.cern/doc/master/classTColor.html#a0f79316b6922be594e6d00e4bc2e11eb
 
+  map<string, string> realNames{
+    {"m_n2_100_c1_80_n1_60",  "m(#tilde{#chi}^{0}_{2})=100GeV, m(#tilde{#chi}^{#pm}_{1}) = 80GeV, m(#tilde{#chi}^{0}_{1})=60GeV"},
+    {"m_n2_100_c1_75_n1_50",  "m(#tilde{#chi}^{0}_{2})=100GeV, m(#tilde{#chi}^{#pm}_{1}) = 75GeV, m(#tilde{#chi}^{0}_{1})=50GeV"},
+    {"m_n2_400_c1_385_n1_370","m(#tilde{#chi}^{0}_{2})=400GeV, m(#tilde{#chi}^{#pm}_{1}) = 385GeV, m(#tilde{#chi}^{0}_{1})=370GeV"},
+    {"m_n2_200_c1_175_n1_150","m(#tilde{#chi}^{0}_{2})=200GeV, m(#tilde{#chi}^{#pm}_{1}) = 175GeV, m(#tilde{#chi}^{0}_{1})=150GeV"},
+    {"wz","wz"},
+    {"zz","zz"},
+    {"ww","ww"},
+    {"w+jets","w+jets",},
+    {"z+jets","z+jets"},
+    {"ttbar","ttbar"}
+    
+  };
+
   for (int i = 0; i < histos.GetEntries(); i++)
   {
     TH1F *h = (TH1F *)histos[i];
-    legends_str.push_back(h->GetTitle());
+    legends_str.push_back(realNames[h->GetTitle()]);
   }
 
   // lets open and draw the canvas
@@ -61,9 +75,13 @@ void Draw_Normalised(TObjArray histos,
 
   if (stacktitle == "")
     stacktitle = ((TH1F *)histos[0])->GetTitle();
-  THStack *Hs = new THStack("hs2", stacktitle.c_str());
+    
+  // with first histo title
+  // THStack *Hs = new THStack("hs2", stacktitle.c_str());
+  // no title
+  THStack *Hs = new THStack("hs2", "");
 
-  TLegend *legend = new TLegend(0.65, 0.5, 0.85, 0.85); // we need different positions for the legend to not
+  TLegend *legend = new TLegend(0.65, 0.5, 0.9, 0.85); // we need different positions for the legend to not
 
   for (int i = 0; i < histos.GetEntries(); i++)
   {
