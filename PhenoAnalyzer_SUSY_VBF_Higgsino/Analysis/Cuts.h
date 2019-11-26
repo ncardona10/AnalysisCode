@@ -36,28 +36,27 @@ bool vbfCut(ExRootTreeReader *treeReader,
 
   treeReader->ReadEntry(entry);
 
-  if (cutsArr[entry])
+
+
+  // MINIMUM 2 JETS!!
+
+  bool min2JetsBool = min2Jets(treeReader, branchDict, entry);
+
+  if (min2JetsBool)
   {
 
-    // MINIMUM 2 JETS!!
+    Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
+    Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
 
-    bool min2JetsBool = min2Jets(treeReader, branchDict, entry);
+    bool mjjBool = mjj(treeReader, branchDict, entry) > 500;
+    bool deltaMultipl = (leadingJet->Eta) * (subLeadingJet->Eta) < 0;
+    bool deltaEtaBool = deltaEta(leadingJet, subLeadingJet) > 4.0;
+    bool pTBothBool = leadingJet->PT > 30.0 && subLeadingJet->PT > 30.0;
+    bool etaBelow5 = abs(leadingJet->Eta) < 5.0 && abs(subLeadingJet->Eta) < 5.0;
 
-    if (min2JetsBool)
-    {
-
-      Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
-      Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
-
-      bool mjjBool = mjj(treeReader, branchDict, entry) > 500;
-      bool deltaMultipl = (leadingJet->Eta) * (subLeadingJet->Eta) < 0;
-      bool deltaEtaBool = deltaEta(leadingJet, subLeadingJet) > 4.0;
-      bool pTBothBool = leadingJet->PT > 30.0 && subLeadingJet->PT > 30.0;
-      bool etaBelow5 = abs(leadingJet->Eta) < 5.0 && abs(subLeadingJet->Eta) < 5.0;
-
-      ans = mjjBool && deltaMultipl && deltaEtaBool && pTBothBool && etaBelow5;
-    }
+    ans = mjjBool && deltaMultipl && deltaEtaBool && pTBothBool && etaBelow5;
   }
+  
 
   vbfCutsArr[entry] = ans;
   return ans;
@@ -131,7 +130,7 @@ bool singleParticle(ExRootTreeReader *treeReader,
   treeReader->ReadEntry(entry);
 
   // vbfcut & cuts
-  if (cutsArr[entry])
+  if (cutsArr[entry] && vbfCutsArr[entry])
   {
     // verify electron condition
     int nElectrons = 0;

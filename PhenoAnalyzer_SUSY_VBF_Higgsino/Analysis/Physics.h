@@ -100,7 +100,7 @@ bool min2Jets(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDi
 
   bool ans = false;
   if(branchDict["Jet"]->GetEntries() >= 2){
-    if(leadingJet->PT>30 && abs(leadingJet->eta)<5 && subLeadingJet->PT>30 && abs(subLeadingJet->eta)<5){
+    if(leadingJet->PT>30 && abs(leadingJet->Eta)<5 && subLeadingJet->PT>30 && abs(subLeadingJet->Eta)<5){
       ans = true; 
     }
   }

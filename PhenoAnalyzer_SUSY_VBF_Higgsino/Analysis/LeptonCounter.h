@@ -216,7 +216,7 @@ bool inSet(int val, set<int> theSet)
   return theSet.count(val) > 0;
 }
 
-void ptEtaPhiMjjMt(
+int ptEtaPhiMjjMt(
     ExRootTreeReader *treeReader,
     map<string, TClonesArray *> branchDict,
     vector<bool> vbfCutsArr,
@@ -227,6 +227,8 @@ void ptEtaPhiMjjMt(
                    vector<bool>&,
                    vector<bool>&))
 {
+
+  int numEvents = 0;
 
   //  cout << "Calculating Pt, eta, phi, mjj and mt" << endl;
 
@@ -292,6 +294,7 @@ void ptEtaPhiMjjMt(
 
     if (filter(treeReader, branchDict, entry, vbfCutsArr, cutsArr))
     {
+      numEvents+=1;
 
       set<int> elecIndices;
       set<int> muonIndices;
@@ -395,7 +398,7 @@ void ptEtaPhiMjjMt(
           if (elecOverlapIndex == -1 && muonOverlapIndex == -1)
           {
             // reconstruction cuts
-            if(jet->PT>30.0 && abs(jet->eta) <5.0){
+            if(jet->PT>30.0 && abs(jet->Eta) <5.0){
               //            cout<<"filling pt eta and phi histos"<<endl;
               histos["ptjet"]->Fill(jet->PT);
               histos["etajet"]->Fill(jet->Eta);
@@ -440,6 +443,9 @@ void ptEtaPhiMjjMt(
   histos["MET"]->Write();
   //  // cout << endl;
   //  cout << "Calculating Pt, eta, phi, mjj and mt DONE." << endl;
+
+  return numEvents;
+
 }
 
 void drawMultiHistos(TObjArray histos, string title, string particleType)
