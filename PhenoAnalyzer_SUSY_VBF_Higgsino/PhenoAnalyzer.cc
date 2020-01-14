@@ -44,16 +44,17 @@ int main(int argc, char *argv[])
   // directory to store the histograms
   TDirectory *nLeptonsDirectory = HistoOutputFile->mkdir("nLeptons");
 
-  TDirectory *single_e_nocuts = HistoOutputFile->mkdir("single_e_nocuts");
-  TDirectory *single_mu_nocuts = HistoOutputFile->mkdir("single_mu_nocuts");
-  TDirectory *single_tau_nocuts = HistoOutputFile->mkdir("single_tau_nocuts");
+  TDirectory *single_e = HistoOutputFile->mkdir("single_e");
+  TDirectory *single_mu = HistoOutputFile->mkdir("single_mu");
+  TDirectory *single_tau = HistoOutputFile->mkdir("single_tau");
 
-  TDirectory *VBF_CutsDirectory = HistoOutputFile->mkdir("VBF_Cuts");
-  TDirectory *CutsDirectory = HistoOutputFile->mkdir("Extra_Cuts");
-
-  TDirectory *single_e_cuts = HistoOutputFile->mkdir("single_e_cuts");
-  TDirectory *single_mu_cuts = HistoOutputFile->mkdir("single_mu_cuts");
-  TDirectory *single_tau_cuts = HistoOutputFile->mkdir("single_tau_cuts");
+  TDirectory *METDirectory = HistoOutputFile->mkdir("MET");
+  TDirectory *BJetsDirectory = HistoOutputFile->mkdir("BJets");
+  TDirectory *VBFDirectory = HistoOutputFile->mkdir("VBF");
+  
+  TDirectory *single_e_met_bjets_vbf = HistoOutputFile->mkdir("single_e_met_bjets_vbf");
+  TDirectory *single_mu_met_bjets_vbf = HistoOutputFile->mkdir("single_mu_met_bjets_vbf");
+  TDirectory *single_tau_met_bjets_vbf = HistoOutputFile->mkdir("single_tau_met_bjets_vbf");
 
   cout << "processing.." << endl;
 
@@ -118,70 +119,81 @@ int main(int argc, char *argv[])
   // -----------------------------------------------------------------------------------------
   // need a different boolean array to avoid filtering problems
 
-  single_e_nocuts->cd();
-  cout << "single_e_nocuts" << endl;
+  single_e->cd();
+  cout << "single_e" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_e);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_e);
-  cout << "single_e_nocuts done." << endl;
+  cout << "single_e done." << endl;
 
-  writeCsv(nEvents, string(argv[1]),"single_e_nocuts");
+  writeCsv(nEvents, string(argv[1]),"single_e");
 
-  single_mu_nocuts->cd();
-  cout << "single_mu_nocuts" << endl;
+  single_mu->cd();
+  cout << "single_mu" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,cut_mu);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,cut_mu);
-  cout << "single_mu_nocuts done." << endl;
+  cout << "single_mu done." << endl;
 
-  writeCsv(nEvents, string(argv[1]),"single_mu_nocuts");
+  writeCsv(nEvents, string(argv[1]),"single_mu");
 
-  single_tau_nocuts->cd();
-  cout << "single_tau_nocuts" << endl;
+
+  single_tau->cd();
+  cout << "single_tau" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_tau);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_tau);
-  cout << "single_tau_nocuts done." << endl;
+  cout << "single_tau done." << endl;
 
-  writeCsv(nEvents, string(argv[1]),"single_tau_nocuts");
+  writeCsv(nEvents, string(argv[1]),"single_tau");
 
   // -----------------------------------------------------------------------------------------
-  CutsDirectory->cd();
-  cout << "Extra_cuts" << endl;
+
+  METDirectory->cd();
+  cout << "MET" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cuts);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cuts);
-  cout << "Extra cuts done." << endl;
+  cout << "MET done." << endl;
 
-  writeCsv(nEvents, string(argv[1]),"Cuts");
+  writeCsv(nEvents, string(argv[1]),"MET");
 
-  VBF_CutsDirectory->cd();
-  cout << "VBF_Cuts" << endl;
+
+  BJetsDirectory->cd();
+  cout << "BJets" << endl;
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cuts);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cuts);
+  cout << "BJets done." << endl;
+
+  writeCsv(nEvents, string(argv[1]),"BJets");
+
+  VBFDirectory->cd();
+  cout << "VBF" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, vbfCut);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, vbfCut);
-  cout << "VBF_Cuts done." << endl;
+  cout << "VBF done." << endl;
 
-  writeCsv(nEvents, string(argv[1]),"VBF_Cuts");
+  writeCsv(nEvents, string(argv[1]),"VBF");
 
-  single_e_cuts->cd();
-  cout << "single_e_cuts" << endl;
+  single_e_met_bjets_vbf->cd();
+  cout << "single_e_met_bjets_vbf" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cut_e);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cut_e);
-  cout << "single_e_cuts done." << endl;
+  cout << "single_e_met_bjets_vbf done." << endl;
 
-  writeCsv(nEvents, string(argv[1]),"single_e_cuts");
+  writeCsv(nEvents, string(argv[1]),"single_e_met_bjets_vbf");
 
-  single_mu_cuts->cd();
-  cout << "single_mu_cuts" << endl;
+  single_mu_met_bjets_vbf->cd();
+  cout << "single_mu_met_bjets_vbf" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,cut_mu);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr,cut_mu);
-  cout << "single_mu_cuts done." << endl;
+  cout << "single_mu_met_bjets_vbf done." << endl;
 
-  writeCsv(nEvents, string(argv[1]),"single_mu_cuts");
+  writeCsv(nEvents, string(argv[1]),"single_mu_met_bjets_vbf");
 
-  single_tau_cuts->cd();
-  cout << "single_tau_cuts" << endl;
+  single_tau_met_bjets_vbf->cd();
+  cout << "single_tau_met_bjets_vbf" << endl;
   drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cut_tau);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cut_tau);
-  cout << "single_tau_cuts done." << endl;
+  cout << "single_tau_met_bjets_vbf done." << endl;
   
-  writeCsv(nEvents, string(argv[1]),"single_tau_cuts");
+  writeCsv(nEvents, string(argv[1]),"single_tau_met_bjets_vbf");
 
   // close output file
   cout << "closing output file" << endl;
