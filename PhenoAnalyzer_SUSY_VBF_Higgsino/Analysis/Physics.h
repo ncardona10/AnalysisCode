@@ -15,8 +15,18 @@ double calculateE(double eta, double pt, double mass)
   return e;
 }
 
+TLorentzVector createTLorentzVector(double PT, double Eta, double Mass, double Phi)
+{
+  double E = calculateE(PT, Eta, Mass);
+  TLorentzVector TLV(PT, Eta, Phi, E);
+  return TLV;
+}
+
 double dR(TLorentzVector t1, TLorentzVector t2)
 {
+
+  //no need to get abs
+  //returns sqrt of the sum of 2 squares
   return t1.DeltaR(t2);
 }
 
@@ -56,8 +66,6 @@ double met(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDict,
   return MET;
 }
 
-
-
 double mt(double pt, double met, double deltaPhi)
 {
   return TMath::Power(
@@ -65,14 +73,11 @@ double mt(double pt, double met, double deltaPhi)
       0.5);
 }
 
-
-
 // Calculate delta eta
 float deltaEta(Jet *leadingJet, Jet *subLeadingJet)
 {
   return abs(leadingJet->Eta - subLeadingJet->Eta);
 }
-
 
 float mjj(ExRootTreeReader *treeReader,
           map<string, TClonesArray *> branchDict,
@@ -89,24 +94,23 @@ float mjj(ExRootTreeReader *treeReader,
   return TMath::Power(2 * leadingJet->PT * subLeadingJet->PT * TMath::ACosH(dEta), 0.5);
 }
 
-
 bool min2Jets(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDict, int entry)
 {
   //get entry
   treeReader->ReadEntry(entry);
-  
+
   Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
   Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
 
   bool ans = false;
-  if(branchDict["Jet"]->GetEntries() >= 2){
-    if(leadingJet->PT>30 && abs(leadingJet->Eta)<5 && subLeadingJet->PT>30 && abs(subLeadingJet->Eta)<5){
-      ans = true; 
+  if (branchDict["Jet"]->GetEntries() >= 2)
+  {
+    if (leadingJet->PT > 30 && abs(leadingJet->Eta) < 5 && subLeadingJet->PT > 30 && abs(subLeadingJet->Eta) < 5)
+    {
+      ans = true;
     }
   }
   return ans;
 }
 
-
-
-#endif 
+#endif

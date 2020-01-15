@@ -56,6 +56,10 @@ int main(int argc, char *argv[])
   TDirectory *single_mu_met_bjets_vbf = HistoOutputFile->mkdir("single_mu_met_bjets_vbf");
   TDirectory *single_tau_met_bjets_vbf = HistoOutputFile->mkdir("single_tau_met_bjets_vbf");
 
+  TDirectory *di_e_met_bjets_vbf = HistoOutputFile->mkdir("di_e_met_bjets_vbf");
+  TDirectory *di_mu_met_bjets_vbf = HistoOutputFile->mkdir("di_mu_met_bjets_vbf");
+  TDirectory *di_tau_met_bjets_vbf = HistoOutputFile->mkdir("di_tau_met_bjets_vbf");
+
   cout << "processing.." << endl;
 
   // get tree info
@@ -121,16 +125,16 @@ int main(int argc, char *argv[])
 
   single_e->cd();
   cout << "single_e" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_e);
-  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_e);
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, mono_e);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, mono_e);
   cout << "single_e done." << endl;
 
   writeCsv(nEvents, string(argv[1]),"single_e");
 
   single_mu->cd();
   cout << "single_mu" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,cut_mu);
-  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,cut_mu);
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,mono_mu);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,mono_mu);
   cout << "single_mu done." << endl;
 
   writeCsv(nEvents, string(argv[1]),"single_mu");
@@ -138,8 +142,8 @@ int main(int argc, char *argv[])
 
   single_tau->cd();
   cout << "single_tau" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_tau);
-  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, cut_tau);
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, mono_tau);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, mono_tau);
   cout << "single_tau done." << endl;
 
   writeCsv(nEvents, string(argv[1]),"single_tau");
@@ -148,8 +152,8 @@ int main(int argc, char *argv[])
 
   METDirectory->cd();
   cout << "MET" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cuts);
-  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cuts);
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, met);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, met);
   cout << "MET done." << endl;
 
   writeCsv(nEvents, string(argv[1]),"MET");
@@ -157,8 +161,8 @@ int main(int argc, char *argv[])
 
   BJetsDirectory->cd();
   cout << "BJets" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cuts);
-  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cuts);
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, bjets);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, bjets);
   cout << "BJets done." << endl;
 
   writeCsv(nEvents, string(argv[1]),"BJets");
@@ -171,29 +175,59 @@ int main(int argc, char *argv[])
 
   writeCsv(nEvents, string(argv[1]),"VBF");
 
+  // -----------------------------------------------------------------------------------------
+
   single_e_met_bjets_vbf->cd();
   cout << "single_e_met_bjets_vbf" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cut_e);
-  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cut_e);
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, mono_e);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, mono_e);
   cout << "single_e_met_bjets_vbf done." << endl;
 
   writeCsv(nEvents, string(argv[1]),"single_e_met_bjets_vbf");
 
   single_mu_met_bjets_vbf->cd();
   cout << "single_mu_met_bjets_vbf" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,cut_mu);
-  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr,cut_mu);
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,mono_mu);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr,mono_mu);
   cout << "single_mu_met_bjets_vbf done." << endl;
 
   writeCsv(nEvents, string(argv[1]),"single_mu_met_bjets_vbf");
 
   single_tau_met_bjets_vbf->cd();
   cout << "single_tau_met_bjets_vbf" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, cut_tau);
-  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, cut_tau);
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, mono_tau);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, mono_tau);
   cout << "single_tau_met_bjets_vbf done." << endl;
   
   writeCsv(nEvents, string(argv[1]),"single_tau_met_bjets_vbf");
+
+  // -----------------------------------------------------------------------------------------
+
+  di_e_met_bjets_vbf->cd();
+  cout << "di_e_met_bjets_vbf" << endl;
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, di_e);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, di_e);
+  cout << "di_e_met_bjets_vbf done." << endl;
+
+  writeCsv(nEvents, string(argv[1]),"di_e_met_bjets_vbf");
+
+  di_mu_met_bjets_vbf->cd();
+  cout << "di_mu_met_bjets_vbf" << endl;
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,di_mu);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr,di_mu);
+  cout << "di_mu_met_bjets_vbf done." << endl;
+
+  writeCsv(nEvents, string(argv[1]),"di_mu_met_bjets_vbf");
+
+  di_tau_met_bjets_vbf->cd();
+  cout << "di_tau_met_bjets_vbf" << endl;
+  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, di_tau);
+  nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, di_tau);
+  cout << "di_tau_met_bjets_vbf done." << endl;
+  
+  writeCsv(nEvents, string(argv[1]),"di_tau_met_bjets_vbf");
+
+ // --------------------------------------------------------------------------------------------
 
   // close output file
   cout << "closing output file" << endl;
