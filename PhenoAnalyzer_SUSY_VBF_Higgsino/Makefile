@@ -75,6 +75,11 @@ compile_ROOT_Delphes_joinHistos:  joinHistos.cc $(OTHERFILES)
 	-I$(DELPHESINC) -I$(EXROOTINC)	\
 	-L$(DELPHESLIB) -lDelphes -L$(EXROOTLIB) -lExRootAnalysis $(ROOTLIBS)
 
+compile_ROOT_Delphes_join2Histos:  join2histos.cc $(OTHERFILES)
+	$(CXX) -o join2histos join2histos.cc $(SOURCEFILES) -Wall $(ROOTCFLAGS) 	\
+	-I$(DELPHESINC) -I$(EXROOTINC)	\
+	-L$(DELPHESLIB) -lDelphes -L$(EXROOTLIB) -lExRootAnalysis $(ROOTLIBS)
+
 compile_ROOT_Delphes_Test: Test.cc $(OTHERFILES)
 	$(CXX) -o Test Test.cc $(SOURCEFILES) -Wall $(ROOTCFLAGS) 	\
 	-I$(DELPHESINC) -I$(EXROOTINC)	\

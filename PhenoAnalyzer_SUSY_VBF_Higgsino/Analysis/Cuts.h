@@ -29,9 +29,9 @@ bool vbfCut(ExRootTreeReader *treeReader,
 {
   bool ans = false;
 
-  // mjj > 500 #
+  // mjj > 0 #
   // eta_lead * eta_subLead < 0 #
-  // |dEta| >4.0
+  // |dEta| >5.5
   // pt both jets > 30
   // |eta|<5 for both jets
 
@@ -49,9 +49,9 @@ bool vbfCut(ExRootTreeReader *treeReader,
       Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
       Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
 
-      bool mjjBool = mjj(treeReader, branchDict, entry) > 500;
+      bool mjjBool = mjj(treeReader, branchDict, entry) > 0;
       bool deltaMultipl = (leadingJet->Eta) * (subLeadingJet->Eta) < 0;
-      bool deltaEtaBool = abs(deltaEta(leadingJet, subLeadingJet) )> 4.0;
+      bool deltaEtaBool = abs(deltaEta(leadingJet, subLeadingJet) )> 5.5;
       bool pTBothBool = leadingJet->PT > 30.0 && subLeadingJet->PT > 30.0;
       bool etaBelow5 = abs(leadingJet->Eta) < 5.0 && abs(subLeadingJet->Eta) < 5.0;
 

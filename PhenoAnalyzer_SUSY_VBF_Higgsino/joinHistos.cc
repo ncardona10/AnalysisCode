@@ -7,10 +7,10 @@ using namespace std;
 int main(int argc, char const *argv[])
 {
   cout<<"creating output file"<<endl;
-  TFile *HistoOutputFile = new TFile("/home/n.cardonac/AnalysisCode/PhenoAnalyzer_SUSY_VBF_Higgsino/finalHistos.root", "RECREATE");
+  TFile *HistoOutputFile = new TFile("/home/n.cardonac/AnalysisCode/PhenoAnalyzer_SUSY_VBF_Higgsino/finalHistosnoetanomjj.root", "RECREATE");
 
 
-  TString inputFolder = "/home/n.cardonac/RunPhenoCodes/outputfiles3/";
+  TString inputFolder = "/home/n.cardonac/RunPhenoCodes/outputfilesnoetanomjj/";
 
   vector<TString> folderNames = {
                                  "m_n2_100_c1_80_n1_60",
@@ -36,11 +36,13 @@ int main(int argc, char const *argv[])
   }
 
   vector<TString> dirNames = {"nLeptons",
-                              "VBF_Cuts",
-                              "Extra_Cuts",
-                              "single_e",
-                              "single_mu",
-                              "single_tau"};
+                              "MET",
+                              "BJets",
+                              "VBF",
+                              "single_e_met_bjets_vbf",
+                              "single_mu_met_bjets_vbf",
+                              "di_e_met_bjets_vbf",
+                              "di_mu_met_bjets_vbf"};
 
   //create ouput folders in output root
   cout<<"creating output subdirectories"<<endl;

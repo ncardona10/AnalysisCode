@@ -79,6 +79,13 @@ float deltaEta(Jet *leadingJet, Jet *subLeadingJet)
   return abs(leadingJet->Eta - subLeadingJet->Eta);
 }
 
+float mjjValue(Jet *j1, Jet *j2){
+
+  float dEta = deltaEta(j1, j2);
+  return TMath::Power(2 * j1->PT * j2->PT * TMath::ACosH(dEta), 0.5);
+
+}
+
 float mjj(ExRootTreeReader *treeReader,
           map<string, TClonesArray *> branchDict,
           int entry)
@@ -86,13 +93,34 @@ float mjj(ExRootTreeReader *treeReader,
   // asume that number of jets >=2
   treeReader->ReadEntry(entry);
 
-  Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
-  Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
+  float topMjj = 0;
+  float tempMjj;
+  Jet *j1;
+  Jet *j2;
 
-  float dEta = deltaEta(leadingJet, subLeadingJet);
+  for(int i = 0 ; i < branchDict["Jet"]->GetEntries()-1; i++)
+  {
+    j1 = (Jet *)branchDict["Jet"]->At(i);
 
-  return TMath::Power(2 * leadingJet->PT * subLeadingJet->PT * TMath::ACosH(dEta), 0.5);
+    for (int j = i+1; j < branchDict["Jet"]->GetEntries(); j++)
+    {
+      j2 = (Jet *)branchDict["Jet"]->At(j);
+      tempMjj = mjjValue(j1,j2);
+
+      if(tempMjj>topMjj)
+      {
+        topMjj = tempMjj;
+      }
+    }
+
+  }
+
+  return topMjj;
+
+  
 }
+
+
 
 bool min2Jets(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDict, int entry)
 {

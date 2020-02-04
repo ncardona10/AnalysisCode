@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 
   nLeptonsDirectory->cd();
   cout << "nLeptons" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,noFilter);
+  //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,noFilter);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr,noFilter);
   cout << "nLeptons done." << endl;
 
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 
   // single_e->cd();
   // cout << "single_e" << endl;
-  // drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, mono_e);
+  // //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, mono_e);
   // nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, mono_e);
   // cout << "single_e done." << endl;
 
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 
   // single_mu->cd();
   // cout << "single_mu" << endl;
-  // drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,mono_mu);
+  // //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,mono_mu);
   // nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts,mono_mu);
   // cout << "single_mu done." << endl;
 
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 
   // single_tau->cd();
   // cout << "single_tau" << endl;
-  // drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, mono_tau);
+  // //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, mono_tau);
   // nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr_nocuts, cutsArr_nocuts, mono_tau);
   // cout << "single_tau done." << endl;
 
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 
   METDirectory->cd();
   cout << "MET" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, met);
+  //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, met);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, met);
   cout << "MET done." << endl;
 
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 
   BJetsDirectory->cd();
   cout << "BJets" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, bjets);
+  //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, bjets);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, bjets);
   cout << "BJets done." << endl;
 
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 
   VBFDirectory->cd();
   cout << "VBF" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, vbfCut);
+  //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, vbfCut);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, vbfCut);
   cout << "VBF done." << endl;
 
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
 
   single_e_met_bjets_vbf->cd();
   cout << "single_e_met_bjets_vbf" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, mono_e);
+  //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, mono_e);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, mono_e);
   cout << "single_e_met_bjets_vbf done." << endl;
 
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 
   single_mu_met_bjets_vbf->cd();
   cout << "single_mu_met_bjets_vbf" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,mono_mu);
+  //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,mono_mu);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr,mono_mu);
   cout << "single_mu_met_bjets_vbf done." << endl;
 
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 
   // single_tau_met_bjets_vbf->cd();
   // cout << "single_tau_met_bjets_vbf" << endl;
-  // drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, mono_tau);
+  // //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, mono_tau);
   // nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, mono_tau);
   // cout << "single_tau_met_bjets_vbf done." << endl;
   
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 
   di_e_met_bjets_vbf->cd();
   cout << "di_e_met_bjets_vbf" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, di_e);
+  //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, di_e);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, di_e);
   cout << "di_e_met_bjets_vbf done." << endl;
 
@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
 
   di_mu_met_bjets_vbf->cd();
   cout << "di_mu_met_bjets_vbf" << endl;
-  drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,di_mu);
+  //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr,di_mu);
   nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr,di_mu);
   cout << "di_mu_met_bjets_vbf done." << endl;
 
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 
   // di_tau_met_bjets_vbf->cd();
   // cout << "di_tau_met_bjets_vbf" << endl;
-  // drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, di_tau);
+  // //drawLeptonCount(treeReader, ns, branchDict, vbfCutsArr, cutsArr, di_tau);
   // nEvents = ptEtaPhiMjjMt(treeReader, branchDict, vbfCutsArr, cutsArr, di_tau);
   // cout << "di_tau_met_bjets_vbf done." << endl;
   
