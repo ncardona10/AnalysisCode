@@ -7,10 +7,10 @@ using namespace std;
 int main(int argc, char const *argv[])
 {
   cout<<"creating output file"<<endl;
-  TFile *HistoOutputFile = new TFile("/home/n.cardonac/AnalysisCode/PhenoAnalyzer_SUSY_VBF_Higgsino/finalHistosnoetanomjj.root", "RECREATE");
+  TFile *HistoOutputFile = new TFile("/home/n.cardonac/AnalysisCode/PhenoAnalyzer_SUSY_VBF_Higgsino/finalHistos.root", "RECREATE");
 
 
-  TString inputFolder = "/home/n.cardonac/RunPhenoCodes/outputfilesnoetanomjj/";
+  TString inputFolder = "/home/n.cardonac/RunPhenoCodes/outputfilesFixedMjj/";
 
   vector<TString> folderNames = {
                                  "m_n2_100_c1_80_n1_60",
@@ -57,27 +57,7 @@ int main(int argc, char const *argv[])
 
 
   //histogram names
-  vector<TString> histoNames = {"# of leptons PT < 15",
-                                "# of electrons PT < 15",
-                                "# of muons PT < 15",
-                                "# of taus PT < 15",
-                                "# of leptons PT < 20",
-                                "# of electrons PT < 20",
-                                "# of muons PT < 20",
-                                "# of taus PT < 20",
-                                "# of leptons PT < 30",
-                                "# of electrons PT < 30",
-                                "# of muons PT < 30",
-                                "# of taus PT < 30",
-                                "# of leptons PT < 40",
-                                "# of electrons PT < 40",
-                                "# of muons PT < 40",
-                                "# of taus PT < 40",
-                                "# of leptons PT < 50",
-                                "# of electrons PT < 50",
-                                "# of muons PT < 50",
-                                "# of taus PT < 50",
-                                "ptelectron",
+  vector<TString> histoNames = {"ptelectron",
                                 "ptmuon",
                                 "pttau",
                                 "ptjet",

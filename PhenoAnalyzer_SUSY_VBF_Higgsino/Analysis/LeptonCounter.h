@@ -93,8 +93,8 @@ map<string, TH1 *> nLeptonAnalysis(ExRootTreeReader *treeReader,
                                    bool (*filter)(ExRootTreeReader *,
                                                   map<string, TClonesArray *>,
                                                   int,
-                                                  vector<bool>&,
-                                                  vector<bool>&))
+                                                  vector<bool> &,
+                                                  vector<bool> &))
 {
 
   //  cout << "nLepton Analysis with n = " << PTUpperCut << endl;
@@ -224,8 +224,8 @@ int ptEtaPhiMjjMt(
     bool (*filter)(ExRootTreeReader *,
                    map<string, TClonesArray *>,
                    int,
-                   vector<bool>&,
-                   vector<bool>&))
+                   vector<bool> &,
+                   vector<bool> &))
 {
 
   int numEvents = 0;
@@ -277,6 +277,8 @@ int ptEtaPhiMjjMt(
 
   histos["mass"] = blankHistogram("Mjj", "Mjj", 100, 0, 5000);
   histos["MET"] = blankHistogram("MET", "MET", 100, 0, 1000);
+  histos["DEtaLeadSublead"] = blankHistogram("DEtaLeadSublead", "DEtaLeadSublead", 100, 0, 10);
+  histos["DEtaMaxMjj"] = blankHistogram("DEtaMaxMjj", "DEtaMaxMjj", 100, 0, 10);
 
   //  cout << "histograms created" << endl;
 
@@ -294,7 +296,7 @@ int ptEtaPhiMjjMt(
 
     if (filter(treeReader, branchDict, entry, vbfCutsArr, cutsArr))
     {
-      numEvents+=1;
+      numEvents += 1;
 
       set<int> elecIndices;
       set<int> muonIndices;
@@ -398,7 +400,8 @@ int ptEtaPhiMjjMt(
           if (elecOverlapIndex == -1 && muonOverlapIndex == -1)
           {
             // reconstruction cuts
-            if(jet->PT>30.0 && abs(jet->Eta) <5.0){
+            if (jet->PT > 30.0 && abs(jet->Eta) < 5.0)
+            {
               //            cout<<"filling pt eta and phi histos"<<endl;
               histos["ptjet"]->Fill(jet->PT);
               histos["etajet"]->Fill(jet->Eta);
@@ -421,6 +424,10 @@ int ptEtaPhiMjjMt(
       {
         double mass = mjj(treeReader, branchDict, entry);
         histos["mass"]->Fill(mass);
+        histos["DEtaLeadSublead"]->Fill(dEtaLeadSubLead(treeReader, branchDict, entry));
+        // Could be <0 if no valid mjj is found
+        // but since mjj>0 is in noFilter, this shouldnt happen
+        histos["DEtaMaxMjj"]->Fill(dEtaMaxMjj(treeReader, branchDict, entry));
       }
 
       //MET
@@ -441,11 +448,12 @@ int ptEtaPhiMjjMt(
 
   histos["mass"]->Write();
   histos["MET"]->Write();
+  histos["DEtaLeadSublead"]->Write();
+  histos["DEtaMaxMjj"]->Write();
   //  // cout << endl;
   //  cout << "Calculating Pt, eta, phi, mjj and mt DONE." << endl;
 
   return numEvents;
-
 }
 
 void drawMultiHistos(TObjArray histos, string title, string particleType)
@@ -471,8 +479,8 @@ void drawLeptonCount(ExRootTreeReader *treeReader,
                      bool (*filter)(ExRootTreeReader *,
                                     map<string, TClonesArray *>,
                                     int,
-                                    vector<bool>&,
-                                    vector<bool>&))
+                                    vector<bool> &,
+                                    vector<bool> &))
 {
   //  cout << "draw lepton count" << endl;
   vector<string> particleTypes = {"lepton", "electron", "muon", "tau"};

@@ -74,16 +74,63 @@ double mt(double pt, double met, double deltaPhi)
 }
 
 // Calculate delta eta
-float deltaEta(Jet *leadingJet, Jet *subLeadingJet)
+float deltaEta(Jet *j1, Jet *j2)
 {
-  return abs(leadingJet->Eta - subLeadingJet->Eta);
+  return abs(j1->Eta - j2->Eta);
 }
 
-float mjjValue(Jet *j1, Jet *j2){
+float dEtaLeadSubLead(ExRootTreeReader *treeReader,
+                      map<string, TClonesArray *> branchDict,
+                      int entry)
+{
+  Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
+  Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
+
+  return deltaEta(leadingJet, subLeadingJet);
+}
+
+float dEtaMaxMjj(ExRootTreeReader *treeReader,
+                 map<string, TClonesArray *> branchDict,
+                 int entry)
+{
+  // asume that number of jets >=2
+  treeReader->ReadEntry(entry);
+
+  float topMjj = -1;
+  float tempMjj;
+  float returnDEta = -1;
+  Jet *j1;
+  Jet *j2;
+
+  for (int i = 0; i < branchDict["Jet"]->GetEntries() - 1; i++)
+  {
+    j1 = (Jet *)branchDict["Jet"]->At(i);
+
+    for (int j = i + 1; j < branchDict["Jet"]->GetEntries(); j++)
+    {
+      j2 = (Jet *)branchDict["Jet"]->At(j);
+
+      if (j1->PT >= 30 && j2->PT >= 30 && abs(j1->Eta) < 5.0 && abs(j2->Eta) < 5.0 && j1.DeltaR(j2) > 0.3)
+      {
+        tempMjj = mjjValue(j1, j2);
+
+        if (tempMjj > topMjj)
+        {
+          topMjj = tempMjj;
+          returnDEta = deltaEta(j1, j2);
+        }
+      }
+    }
+  }
+
+  return returnDEta;
+}
+
+float mjjValue(Jet *j1, Jet *j2)
+{
 
   float dEta = deltaEta(j1, j2);
   return TMath::Power(2 * j1->PT * j2->PT * TMath::ACosH(dEta), 0.5);
-
 }
 
 float mjj(ExRootTreeReader *treeReader,
@@ -93,52 +140,52 @@ float mjj(ExRootTreeReader *treeReader,
   // asume that number of jets >=2
   treeReader->ReadEntry(entry);
 
-  float topMjj = 0;
+  float topMjj = -1;
   float tempMjj;
   Jet *j1;
   Jet *j2;
 
-  for(int i = 0 ; i < branchDict["Jet"]->GetEntries()-1; i++)
+  for (int i = 0; i < branchDict["Jet"]->GetEntries() - 1; i++)
   {
     j1 = (Jet *)branchDict["Jet"]->At(i);
 
-    for (int j = i+1; j < branchDict["Jet"]->GetEntries(); j++)
+    for (int j = i + 1; j < branchDict["Jet"]->GetEntries(); j++)
     {
       j2 = (Jet *)branchDict["Jet"]->At(j);
-      tempMjj = mjjValue(j1,j2);
 
-      if(tempMjj>topMjj)
+      if (j1->PT >= 30 && j2->PT >= 30 && abs(j1->Eta) < 5.0 && abs(j2->Eta) < 5.0 && j1.DeltaR(j2) > 0.3)
       {
-        topMjj = tempMjj;
+        tempMjj = mjjValue(j1, j2);
+
+        if (tempMjj > topMjj)
+        {
+          topMjj = tempMjj;
+        }
       }
     }
-
   }
 
   return topMjj;
-
-  
 }
-
-
 
 bool min2Jets(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDict, int entry)
 {
   //get entry
   treeReader->ReadEntry(entry);
 
-  Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
-  Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
+  // Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
+  // Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
 
-  bool ans = false;
-  if (branchDict["Jet"]->GetEntries() >= 2)
-  {
-    if (leadingJet->PT > 30 && abs(leadingJet->Eta) < 5 && subLeadingJet->PT > 30 && abs(subLeadingJet->Eta) < 5)
-    {
-      ans = true;
-    }
-  }
-  return ans;
+  return branchDict["Jet"]->GetEntries() >= 2;
+  // bool ans = false;
+  // if (branchDict["Jet"]->GetEntries() >= 2)
+  // {
+  //   if (leadingJet->PT > 30 && abs(leadingJet->Eta) < 5 && subLeadingJet->PT > 30 && abs(subLeadingJet->Eta) < 5)
+  //   {
+  //     ans = true;
+  //   }
+  // }
+  // return ans;
 }
 
 #endif
