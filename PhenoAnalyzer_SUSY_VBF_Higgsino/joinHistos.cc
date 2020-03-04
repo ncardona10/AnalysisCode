@@ -10,19 +10,14 @@ int main(int argc, char const *argv[])
   TFile *HistoOutputFile = new TFile("/home/n.cardonac/AnalysisCode/PhenoAnalyzer_SUSY_VBF_Higgsino/finalHistos.root", "RECREATE");
 
 
-  TString inputFolder = "/home/n.cardonac/RunPhenoCodes/outputfilesFixedMjj/";
+  TString inputFolder = "/home/n.cardonac/RunPhenoCodes/higgsino_nomjj/";
 
-  vector<TString> folderNames = {
-                                 "m_n2_100_c1_80_n1_60",
-                                 "m_n2_100_c1_75_n1_50",
+  vector<TString> folderNames = {"m_n2_100_c1_75_n1_50",
                                  "m_n2_400_c1_385_n1_370",
-                                 "m_n2_200_c1_175_n1_150",
-                                 "wz",
-                                 "zz",
-                                 "ww",
+                                 "vv",
                                  "w+jets",
                                  "z+jets",
-                                 "ttbar"
+                                 "ttbar",
                                  };
 
   map<TString, TFile *> sfiles;
@@ -36,25 +31,22 @@ int main(int argc, char const *argv[])
   }
 
   vector<TString> dirNames = {"nLeptons",
+			      "Jets",	
                               "MET",
                               "BJets",
                               "VBF",
                               "single_e_met_bjets_vbf",
-                              "single_mu_met_bjets_vbf",
-                              "di_e_met_bjets_vbf",
-                              "di_mu_met_bjets_vbf"};
+                              "single_mu_met_bjets_vbf"};
 
   //create ouput folders in output root
   cout<<"creating output subdirectories"<<endl;
   HistoOutputFile->cd();
   map<TString, TDirectory *> outputDirs;
   for (int i = 0; (unsigned)i < dirNames.size(); i++)
-  {
+  { 
+    cout<<"subdirectories names "<< dirNames[i]<<endl;
     outputDirs[dirNames[i]] = HistoOutputFile->mkdir(dirNames[i]);
   }
-
-  
-
 
   //histogram names
   vector<TString> histoNames = {"ptelectron",
@@ -74,7 +66,9 @@ int main(int argc, char const *argv[])
                                 "Mttau",
                                 "Mtjet",
                                 "Mjj",
-                                "MET"};
+                                "MET",
+                                "DEta"
+                                };
 
   /*
 
@@ -111,6 +105,11 @@ int main(int argc, char const *argv[])
         histo->SetName(folderNames[folder_i]);
 
         cout<<"adding to histogram list"<<endl;
+
+        if(histoNames[histo_i] == "Mjj"){
+          histo->Rebin(5);
+        }
+
         histos.AddLast(histo);
       }
 
@@ -123,7 +122,9 @@ int main(int argc, char const *argv[])
 
       string histoNameString = (string)histoNames[histo_i];
       Draw_Normalised(histos, (TPad *)cl->cd(0), true, histoNameString);
-
+      //if((folderNames[i] == "m_n2_100_c1_80_n1_60")){
+        
+      //} 
       cl->Write();
     }
   }

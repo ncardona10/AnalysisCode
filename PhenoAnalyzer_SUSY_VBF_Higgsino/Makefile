@@ -75,6 +75,21 @@ compile_ROOT_Delphes_joinHistos:  joinHistos.cc $(OTHERFILES)
 	-I$(DELPHESINC) -I$(EXROOTINC)	\
 	-L$(DELPHESLIB) -lDelphes -L$(EXROOTLIB) -lExRootAnalysis $(ROOTLIBS)
 
+compile_ROOT_Delphes_stackHistos:  stackHistos.cc $(OTHERFILES)
+	$(CXX) -o stackHistos stackHistos.cc $(SOURCEFILES) -Wall $(ROOTCFLAGS) 	\
+	-I$(DELPHESINC) -I$(EXROOTINC)	\
+	-L$(DELPHESLIB) -lDelphes -L$(EXROOTLIB) -lExRootAnalysis $(ROOTLIBS)
+
+compile_ROOT_Delphes_joinSignalHistos:  joinSignalHistos.cc $(OTHERFILES)
+	$(CXX) -o joinSignalHistos joinSignalHistos.cc $(SOURCEFILES) -Wall $(ROOTCFLAGS) \
+	-I$(DELPHESINC) -I$(EXROOTINC)  \
+	-L$(DELPHESLIB) -lDelphes -L$(EXROOTLIB) -lExRootAnalysis $(ROOTLIBS)
+
+compile_ROOT_Delphes_joinBGHistos:  joinBGHistos.cc $(OTHERFILES)
+	 $(CXX) -o joinBGHistos joinBGHistos.cc $(SOURCEFILES) -Wall $(ROOTCFLAGS)   \
+	-I$(DELPHESINC) -I$(EXROOTINC)  \
+	-L$(DELPHESLIB) -lDelphes -L$(EXROOTLIB) -lExRootAnalysis $(ROOTLIBS)
+
 compile_ROOT_Delphes_join2Histos:  join2histos.cc $(OTHERFILES)
 	$(CXX) -o join2histos join2histos.cc $(SOURCEFILES) -Wall $(ROOTCFLAGS) 	\
 	-I$(DELPHESINC) -I$(EXROOTINC)	\

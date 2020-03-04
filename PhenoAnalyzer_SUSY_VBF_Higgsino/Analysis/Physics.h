@@ -4,6 +4,9 @@
 #include "../ROOTFunctions.h"
 #include "../DelphesFunctions.h"
 
+#include <utility>
+
+//Calculate the energy of the particle
 double calculateE(double eta, double pt, double mass)
 {
 
@@ -15,6 +18,7 @@ double calculateE(double eta, double pt, double mass)
   return e;
 }
 
+//Create a TLorenzt vector of a particle
 TLorentzVector createTLorentzVector(double PT, double Eta, double Mass, double Phi)
 {
   double E = calculateE(PT, Eta, Mass);
@@ -22,14 +26,15 @@ TLorentzVector createTLorentzVector(double PT, double Eta, double Mass, double P
   return TLV;
 }
 
+//Calculate the delta R between two TLorenzt vectors
 double dR(TLorentzVector t1, TLorentzVector t2)
 {
-
   //no need to get abs
   //returns sqrt of the sum of 2 squares
   return t1.DeltaR(t2);
 }
 
+//Boolean true or false if there is an overlap
 bool overlap(double dr)
 {
   //well take minimum dr as 0.3
@@ -37,6 +42,7 @@ bool overlap(double dr)
   return dr < 0.3;
 }
 
+// Normalize variable phi
 double normalizedDphi(double phi)
 {
   const double PI = TMath::Pi();
@@ -49,12 +55,10 @@ double normalizedDphi(double phi)
   {
     phi = twoPI - phi;
   }
-  // else{
-  //   phi = TMath::Abs(phi);
-  // }
   return phi;
 }
 
+// Return the missing energy transverse of an event
 double met(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDict, int entry)
 {
   //get entry
@@ -66,6 +70,7 @@ double met(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDict,
   return MET;
 }
 
+// Calculate the transverse mass based on a lepton and the missing energy transverse
 double mt(double pt, double met, double deltaPhi)
 {
   return TMath::Power(
@@ -73,12 +78,13 @@ double mt(double pt, double met, double deltaPhi)
       0.5);
 }
 
-// Calculate delta eta
+// Calculate delta eta between two jets
 float deltaEta(Jet *j1, Jet *j2)
 {
   return abs(j1->Eta - j2->Eta);
 }
 
+//Calculate the delta eta between the leading and subleading jets
 float dEtaLeadSubLead(ExRootTreeReader *treeReader,
                       map<string, TClonesArray *> branchDict,
                       int entry)
@@ -89,103 +95,140 @@ float dEtaLeadSubLead(ExRootTreeReader *treeReader,
   return deltaEta(leadingJet, subLeadingJet);
 }
 
-float dEtaMaxMjj(ExRootTreeReader *treeReader,
-                 map<string, TClonesArray *> branchDict,
-                 int entry)
+// Calculate the delta R between two jets
+float deltaR(Jet *j1, Jet *j2)
 {
-  // asume that number of jets >=2
+  float dphi = abs(j1->Phi - j2->Phi);
+  const double PI = TMath::Pi();
+  if (dphi > PI)
+  {
+    dphi = 2 * PI - dphi;
+  }
+  float DEta = j1->Eta - j2->Eta;
+  float dR = sqrt(pow(dphi, 2) + pow(DEta, 2));
+  return dR;
+}
+
+// Calculate the delta R between two jets
+float deltaR4TLorentzVector(TLorentzVector t1, TLorentzVector t2)
+{
+  double dphi = abs(t1.Phi() - t2.Phi());
+  const double PI = TMath::Pi();
+  if (dphi > PI)
+  {
+    dphi = 2 * PI - dphi;
+  }
+  float DEta = t1.Eta() - t2.Eta();
+  float dR = sqrt(pow(dphi, 2) + pow(DEta, 2));
+  return dR;
+}
+
+// Calculate the mjj
+float mjj(Jet *j1, Jet *j2)
+{
+  return sqrt(2. * j1->PT * j2->PT * cosh(j1->Eta - j2->Eta));
+}
+
+bool min2JetsNotTau(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDict, int entry)
+{
   treeReader->ReadEntry(entry);
 
-  float topMjj = -1;
-  float tempMjj;
-  float returnDEta = -1;
+  // cout<<"in min2 jets"<<endl; 
+  // cout << "num jets "<< branchDict["Jet"]->GetEntries() << endl;
+
+  Jet *jet;
+  vector<Jet *> posJets;
+
+  for (int i = 0; i < branchDict["Jet"]->GetEntries(); i++)
+  {
+    jet = (Jet *)branchDict["Jet"]->At(i);
+
+    if (!jet->TauTag)
+    {
+      posJets.push_back(jet);
+    }
+  }
+
+  // cout<<"after for num array "<< (0 < (posJets.size() - 1)) << " " << ((int) posJets.size() - 1) << endl;
+
+  bool ans = false;
   Jet *j1;
   Jet *j2;
 
-  for (int i = 0; i < branchDict["Jet"]->GetEntries() - 1; i++)
+  for(int i = 0; ( i < (int)posJets.size() - 1) && !ans; i++)
   {
-    j1 = (Jet *)branchDict["Jet"]->At(i);
+    // cout << "entra al loop" << endl;
+    j1 = posJets[i];
 
-    for (int j = i + 1; j < branchDict["Jet"]->GetEntries(); j++)
+    for(int j = i + 1; ( j < (int)posJets.size()) && !ans; j++)
     {
-      j2 = (Jet *)branchDict["Jet"]->At(j);
+      j2 = posJets[j];
 
-      if (j1->PT >= 30 && j2->PT >= 30 && abs(j1->Eta) < 5.0 && abs(j2->Eta) < 5.0 && j1.DeltaR(j2) > 0.3)
+      if (deltaR(j1, j2) > 0.3 )
       {
-        tempMjj = mjjValue(j1, j2);
-
-        if (tempMjj > topMjj)
-        {
-          topMjj = tempMjj;
-          returnDEta = deltaEta(j1, j2);
-        }
+        ans = true;
       }
     }
   }
 
-  return returnDEta;
+  return ans;
 }
 
-float mjjValue(Jet *j1, Jet *j2)
+pair<Jet *, Jet *> getMaxMjjJetPair(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDict, int entry)
 {
-
-  float dEta = deltaEta(j1, j2);
-  return TMath::Power(2 * j1->PT * j2->PT * TMath::ACosH(dEta), 0.5);
-}
-
-float mjj(ExRootTreeReader *treeReader,
-          map<string, TClonesArray *> branchDict,
-          int entry)
-{
-  // asume that number of jets >=2
   treeReader->ReadEntry(entry);
 
-  float topMjj = -1;
-  float tempMjj;
-  Jet *j1;
-  Jet *j2;
+  // cout<<"entered function"<<endl;
 
-  for (int i = 0; i < branchDict["Jet"]->GetEntries() - 1; i++)
+  if (min2JetsNotTau(treeReader, branchDict, entry))
   {
-    j1 = (Jet *)branchDict["Jet"]->At(i);
 
-    for (int j = i + 1; j < branchDict["Jet"]->GetEntries(); j++)
-    {
-      j2 = (Jet *)branchDict["Jet"]->At(j);
+    // cout<<"in if"<<endl;
 
-      if (j1->PT >= 30 && j2->PT >= 30 && abs(j1->Eta) < 5.0 && abs(j2->Eta) < 5.0 && j1.DeltaR(j2) > 0.3)
+    Jet *j1;
+    Jet *j2;
+    float topMjj = - 1.;
+    float tempMjj = 0.;
+    pair <Jet *, Jet *> ans (NULL, NULL);
+
+    for
+       (int i = 0; i < branchDict["Jet"]->GetEntries() - 1; i++)
       {
-        tempMjj = mjjValue(j1, j2);
-
-        if (tempMjj > topMjj)
+        j1 = (Jet *)branchDict["Jet"]->At(i);
+        if (!j1->TauTag)
         {
-          topMjj = tempMjj;
+        for
+           (int j = i + 1; j < branchDict["Jet"]->GetEntries(); j++)
+          {
+            j2 = (Jet *)branchDict["Jet"]->At(j);
+            if (!j2->TauTag)
+            {
+              if
+                 (deltaR(j1, j2) > 0.3 )
+                {
+                  tempMjj = mjj(j1, j2);
+                  if
+                     (tempMjj > topMjj)
+                    {
+                      topMjj = tempMjj;
+                      ans.first = j1;
+                      ans.second = j2;
+                    
+                    }
+                }
+            }
+          }
         }
       }
-    }
+    return ans;
   }
+  else
+  {
+    // cout<<"in else"<<endl;
 
-  return topMjj;
-}
-
-bool min2Jets(ExRootTreeReader *treeReader, map<string, TClonesArray *> branchDict, int entry)
-{
-  //get entry
-  treeReader->ReadEntry(entry);
-
-  // Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
-  // Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
-
-  return branchDict["Jet"]->GetEntries() >= 2;
-  // bool ans = false;
-  // if (branchDict["Jet"]->GetEntries() >= 2)
-  // {
-  //   if (leadingJet->PT > 30 && abs(leadingJet->Eta) < 5 && subLeadingJet->PT > 30 && abs(subLeadingJet->Eta) < 5)
-  //   {
-  //     ans = true;
-  //   }
-  // }
-  // return ans;
+    pair <Jet *, Jet *> ans (NULL, NULL);
+    return ans;
+  }
 }
 
 #endif

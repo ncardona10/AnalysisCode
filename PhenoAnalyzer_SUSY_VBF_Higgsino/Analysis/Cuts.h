@@ -10,121 +10,48 @@
 #include "../DelphesFunctions.h"
 #include "./Physics.h"
 #include "./Overlaps.h"
+#include "./LeptonCounter.h"
 
 bool noFilter(ExRootTreeReader *treeReader,
               map<string, TClonesArray *> branchDict,
               int entry,
-              vector<bool> &vbfCutsArr,
-              vector<bool> &cutsArr)
+              vector<int> &cutsArr,
+              vector<pair<Jet*,Jet*>> &jetPairs)
 {
-  return mjj(treeReader, branchDict, entry) > 0;
+  return true;
 }
 
-bool vbfCut(ExRootTreeReader *treeReader,
-            map<string, TClonesArray *> branchDict,
-            int entry,
-            vector<bool> &vbfCutsArr,
-            vector<bool> &cutsArr)
-
+bool compareJetsByPT(Jet *j1, Jet *j2)
 {
-  bool ans = false;
-
-  // mjj > 0 #
-  // eta_lead * eta_subLead < 0 #
-  // |dEta| >5.5
-  // pt both jets > 30
-  // |eta|<5 for both jets
-
-  treeReader->ReadEntry(entry);
-
-  if (cutsArr[entry])
-  {
-
-    // MINIMUM 2 JETS!!
-
-    bool min2JetsBool = min2Jets(treeReader, branchDict, entry);
-
-    if (min2JetsBool)
-    {
-
-      Jet *leadingJet = (Jet *)branchDict["Jet"]->At(0);
-      Jet *subLeadingJet = (Jet *)branchDict["Jet"]->At(1);
-
-      // if there are only overlaps, mjj returns -1
-      bool mjjBool = mjj(treeReader, branchDict, entry) > 0;
-      bool deltaMultipl = (leadingJet->Eta) * (subLeadingJet->Eta) < 0;
-      bool deltaEtaBool = abs(deltaEta(leadingJet, subLeadingJet)) > 5.5;
-      bool pTBothBool = leadingJet->PT > 30.0 && subLeadingJet->PT > 30.0;
-      bool etaBelow5 = abs(leadingJet->Eta) < 5.0 && abs(subLeadingJet->Eta) < 5.0;
-
-      ans = mjjBool && deltaMultipl && deltaEtaBool && pTBothBool && etaBelow5;
-    }
-  }
-
-  vbfCutsArr[entry] = ans;
-  return ans;
-}
-
-bool cuts(ExRootTreeReader *treeReader,
-          map<string, TClonesArray *> branchDict,
-          int entry,
-          vector<bool> &vbfCutsArr,
-          vector<bool> &cutsArr)
-{
-  // needs to meet vbf
-  // met>100
-  // # bjets = 0
-
-  treeReader->ReadEntry(entry);
-  bool ans = false;
-
-  // if (vbfCutsArr[entry])
-  // {
-  bool metBool = met(treeReader, branchDict, entry) > 100;
-
-  if (metBool)
-  {
-    bool bJetsBool = true;
-
-    for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
-    {
-      Jet *jet = (Jet *)branchDict["Jet"]->At(leaf);
-      if (jet->BTag == 1)
-      {
-        bJetsBool = false;
-        break;
-      }
-    }
-
-    ans = bJetsBool;
-  }
-  // }
-
-  cutsArr[entry] = ans;
-  return ans;
+  return (j1->PT > j2->PT);
 }
 
 bool met(ExRootTreeReader *treeReader,
          map<string, TClonesArray *> branchDict,
          int entry,
-         vector<bool> &vbfCutsArr,
-         vector<bool> &cutsArr)
+         vector<int> &cutsArr,
+              vector<pair<Jet*,Jet*>> &jetPairs)
 {
   // met>150
 
-  treeReader->ReadEntry(entry);
+  if (cutsArr[entry])
+  {
+    treeReader->ReadEntry(entry);
 
-  bool metBool = met(treeReader, branchDict, entry) > 150;
+    bool metBool = met(treeReader, branchDict, entry) > 150;
 
-  cutsArr[entry] = metBool;
-  return metBool;
+    cutsArr[entry] = metBool;
+    return metBool;
+  }
+
+  return false;
 }
 
 bool bjets(ExRootTreeReader *treeReader,
            map<string, TClonesArray *> branchDict,
            int entry,
-           vector<bool> &vbfCutsArr,
-           vector<bool> &cutsArr)
+           vector<int> &cutsArr,
+              vector<pair<Jet*,Jet*>> &jetPairs)
 {
   // # bjets = 0
 
@@ -138,7 +65,7 @@ bool bjets(ExRootTreeReader *treeReader,
     for (int leaf = 0; leaf < branchDict["Jet"]->GetEntries(); leaf++)
     {
       Jet *jet = (Jet *)branchDict["Jet"]->At(leaf);
-      if (jet->BTag == 1)
+      if (jet->BTag == 1 && jet->PT>30.0 && abs(jet->Eta)<2.5)
       {
         bJetsBool = false;
         break;
@@ -152,14 +79,47 @@ bool bjets(ExRootTreeReader *treeReader,
   cutsArr[entry] = bJetsBool;
   return bJetsBool;
 }
+
+bool vbfCut(ExRootTreeReader *treeReader,
+            map<string, TClonesArray *> branchDict,
+            int entry,
+            vector<int> &cutsArr,
+              vector<pair<Jet*,Jet*>> &jetPairs)
+
+{
+  bool ans = 0;
+
+  // mjj >700 #
+  // eta_j1 * eta_j2 < 0 #
+  // |dEta| >5.5
+
+  treeReader->ReadEntry(entry);
+
+  if (cutsArr[entry])
+  {
+    bool min2JetsBool = min2JetsNotTau(treeReader, branchDict, entry);
+
+    if (min2JetsBool)
+    {
+      bool mjjBool = mjj(jetPairs[entry].first, jetPairs[entry].second) > 0;
+      bool etaMultBool = (jetPairs[entry].first->Eta) * (jetPairs[entry].second->Eta) < 0;
+      bool deltaEtaBool = deltaEta(jetPairs[entry].first, jetPairs[entry].second) > 5.5;
+      ans = mjjBool && etaMultBool && deltaEtaBool ;
+    }
+  }
+  cutsArr[entry] = ans;
+  return ans;
+}
+
 bool nParticle(ExRootTreeReader *treeReader,
                map<string, TClonesArray *> branchDict,
                int entry,
                int n_electrons,
                int n_muon,
                int n_tau,
-               vector<bool> &vbfCutsArr,
-               vector<bool> &cutsArr)
+               vector<int> &cutsArr,
+               bool checkElecPT,
+               bool checkMuonPT)
 {
 
   /*
@@ -179,7 +139,7 @@ bool nParticle(ExRootTreeReader *treeReader,
   treeReader->ReadEntry(entry);
 
   // vbfcut & cuts
-  if (vbfCutsArr[entry])
+  if (cutsArr[entry])
   {
     // verify electron condition
     int nElectrons = 0;
@@ -189,11 +149,22 @@ bool nParticle(ExRootTreeReader *treeReader,
     while (nElectrons <= n_electrons && i < branchDict["Electron"]->GetEntries())
     {
       Electron *elec = (Electron *)branchDict["Electron"]->At(i);
-      if (elec->PT >= 8 && elec->PT <= 40 && abs(elec->Eta) < 2.4)
+      if (elec->PT >= 8 && abs(elec->Eta) < 2.4)
       {
+        if(checkElecPT)
+        {
+          if(elec->PT <= 40 ){
+            nElectrons++;
+            particleCharacteristics.push_back(createTLorentzVector(elec->PT, elec->Eta, 0.000510998902, elec->Phi));
+          }  
+        }
 
-        nElectrons++;
-        particleCharacteristics.push_back(createTLorentzVector(elec->PT, elec->Eta, 0.000510998902, elec->Phi));
+        else
+        {
+          nElectrons++;
+          particleCharacteristics.push_back(createTLorentzVector(elec->PT, elec->Eta, 0.000510998902, elec->Phi));
+        }
+
       }
       i++;
     }
@@ -209,10 +180,19 @@ bool nParticle(ExRootTreeReader *treeReader,
       while (nMuons <= n_muon && i < branchDict["Muon"]->GetEntries())
       {
         Muon *muon = (Muon *)branchDict["Muon"]->At(i);
-        if (muon->PT >= 5 && muon->PT <= 40 && abs(muon->Eta) < 2.4)
+        if (muon->PT >= 5 && abs(muon->Eta) < 2.4)
         {
-          nMuons++;
-          particleCharacteristics.push_back(createTLorentzVector(muon->PT, muon->Eta, 0.1056583715, muon->Phi));
+
+          if(checkMuonPT){
+            if(muon->PT <= 40){
+              nMuons++;
+              particleCharacteristics.push_back(createTLorentzVector(muon->PT, muon->Eta, 0.1056583715, muon->Phi));
+            }
+          }
+          else{
+            nMuons++;
+            particleCharacteristics.push_back(createTLorentzVector(muon->PT, muon->Eta, 0.1056583715, muon->Phi));
+          }
         }
         i++;
       }
@@ -262,71 +242,155 @@ SINGLE PARTICLE
 bool mono_e(ExRootTreeReader *treeReader,
             map<string, TClonesArray *> branchDict,
             int entry,
-            vector<bool> &vbfCutsArr,
-            vector<bool> &cutsArr)
+            vector<int> &cutsArr,
+              vector<pair<Jet*,Jet*>> &jetPairs)
 {
-  return nParticle(treeReader, branchDict, entry, 1, 0, 0, vbfCutsArr, cutsArr);
+  return nParticle(treeReader, branchDict, entry, 1, 0, 0, cutsArr,true,false);
 }
 
 bool mono_mu(ExRootTreeReader *treeReader,
              map<string, TClonesArray *> branchDict,
              int entry,
-             vector<bool> &vbfCutsArr,
-             vector<bool> &cutsArr)
+             vector<int> &cutsArr,
+              vector<pair<Jet*,Jet*>> &jetPairs)
 {
-  return nParticle(treeReader, branchDict, entry, 0, 1, 0, vbfCutsArr, cutsArr);
+  return nParticle(treeReader, branchDict, entry, 0, 1, 0, cutsArr,false,true);
 }
 
-bool mono_tau(ExRootTreeReader *treeReader,
-              map<string, TClonesArray *> branchDict,
-              int entry,
-              vector<bool> &vbfCutsArr,
-              vector<bool> &cutsArr)
-{
-  return nParticle(treeReader, branchDict, entry, 0, 0, 1, vbfCutsArr, cutsArr);
-}
+// bool mono_tau(ExRootTreeReader *treeReader,
+//               map<string, TClonesArray *> branchDict,
+//               int entry,
+//               vector<int> &cutsArr,
+//               vector<pair<Jet*,Jet*>> &jetPairs)
+// {
+//   return nParticle(treeReader, branchDict, entry, 0, 0, 1, cutsArr);
+// }
 
 /*
 DI PARTICLE
 */
 
-bool di_e(ExRootTreeReader *treeReader,
-          map<string, TClonesArray *> branchDict,
-          int entry,
-          vector<bool> &vbfCutsArr,
-          vector<bool> &cutsArr)
-{
-  return nParticle(treeReader, branchDict, entry, 2, 0, 0, vbfCutsArr, cutsArr);
-}
+// bool di_e(ExRootTreeReader *treeReader,
+//           map<string, TClonesArray *> branchDict,
+//           int entry,
+//           vector<int> &cutsArr,
+//               vector<pair<Jet*,Jet*>> &jetPairs)
+// {
+//   return nParticle(treeReader, branchDict, entry, 2, 0, 0, cutsArr);
+// }
 
-bool di_mu(ExRootTreeReader *treeReader,
-           map<string, TClonesArray *> branchDict,
-           int entry,
-           vector<bool> &vbfCutsArr,
-           vector<bool> &cutsArr)
-{
-  return nParticle(treeReader, branchDict, entry, 0, 2, 0, vbfCutsArr, cutsArr);
-}
+// bool di_mu(ExRootTreeReader *treeReader,
+//            map<string, TClonesArray *> branchDict,
+//            int entry,
+//            vector<int> &cutsArr,
+//               vector<pair<Jet*,Jet*>> &jetPairs)
+// {
+//   return nParticle(treeReader, branchDict, entry, 0, 2, 0, cutsArr);
+// }
 
-bool di_tau(ExRootTreeReader *treeReader,
-            map<string, TClonesArray *> branchDict,
-            int entry,
-            vector<bool> &vbfCutsArr,
-            vector<bool> &cutsArr)
-{
-  return nParticle(treeReader, branchDict, entry, 0, 0, 2, vbfCutsArr, cutsArr);
-}
+// bool di_tau(ExRootTreeReader *treeReader,
+//             map<string, TClonesArray *> branchDict,
+//             int entry,
+//             vector<int> &cutsArr,
+//               vector<pair<Jet*,Jet*>> &jetPairs)
+// {
+//   return nParticle(treeReader, branchDict, entry, 0, 0, 2, cutsArr);
+// }
 
 /*
 0 leptons
 */
 
-bool zero_leptons(ExRootTreeReader *treeReader,
-            map<string, TClonesArray *> branchDict,
-            int entry,
-            vector<bool> &vbfCutsArr,
-            vector<bool> &cutsArr)
+// bool zero_leptons(ExRootTreeReader *treeReader,
+//                   map<string, TClonesArray *> branchDict,
+//                   int entry,
+//                   vector<int> &cutsArr,
+//               vector<pair<Jet*,Jet*>> &jetPairs)
+// {
+//   return nParticle(treeReader, branchDict, entry, 0, 0, 0, cutsArr);
+// }
+
+//filter for the jets pt and |eta|
+bool jetsPtEtaFilter(ExRootTreeReader *treeReader,
+                     map<string, TClonesArray *> branchDict,
+                     int entry,
+                     vector<int> &cutsArr,
+              vector<pair<Jet*,Jet*>> &jetPairs)
 {
-  return nParticle(treeReader, branchDict, entry, 0, 0, 0, vbfCutsArr, cutsArr);
+  treeReader->ReadEntry(entry);
+  if (cutsArr[entry])
+  {
+    bool ans = false;
+
+    if (jetPairs[entry].first->PT > 30.0 && abs(jetPairs[entry].first->Eta) < 5.0 && 
+        jetPairs[entry].second->PT > 30.0 && abs(jetPairs[entry].second->Eta) < 5.0)
+    {
+      ans = true;
+    }
+    
+    cutsArr[entry] = ans;
+
+    return ans;
+  }
+  return false;
 }
 
+
+bool jetsLeptonOverlap(ExRootTreeReader *treeReader,
+                     map<string, TClonesArray *> branchDict,
+                     int entry,
+                     vector<int> &cutsArr,
+              vector<pair<Jet*,Jet*>> &jetPairs)
+{
+  treeReader->ReadEntry(entry);
+  bool ans = elecOverlap(treeReader,branchDict,jetPairs[entry].first)==-1;
+  ans &= muonOverlap(treeReader,branchDict,jetPairs[entry].first)==-1;
+  ans &= tauOverlap(treeReader,branchDict,jetPairs[entry].first)==-1;
+  ans &= elecOverlap(treeReader,branchDict,jetPairs[entry].second)==-1;
+  ans &= muonOverlap(treeReader,branchDict,jetPairs[entry].second)==-1;
+  ans &= tauOverlap(treeReader,branchDict,jetPairs[entry].second)==-1;
+  return ans;
+
+}
+
+bool jetConditions(ExRootTreeReader *treeReader,
+                     map<string, TClonesArray *> branchDict,
+                     int entry,
+                     vector<int> &cutsArr,
+              vector<pair<Jet*,Jet*>> &jetPairs)
+{
+  treeReader->ReadEntry(entry);
+
+  if(cutsArr[entry] && jetPairs[entry].first != NULL && jetPairs[entry].second != NULL){
+    bool ans = jetsLeptonOverlap(treeReader,branchDict,entry,cutsArr,jetPairs) &&  jetsPtEtaFilter(treeReader,branchDict,entry,cutsArr,jetPairs);
+    cutsArr[entry] = ans; 
+    return ans;
+  }
+  cutsArr[entry] = false;
+  return false;
+}
+
+
+
+// apply filter, do not generate histograms
+void applyFilter(ExRootTreeReader *treeReader,
+                     vector<int> ns,
+                     map<string, TClonesArray *> branchDict,
+                     vector<int> &cutsArr,
+                     vector<pair<Jet*,Jet*>> &jetPairs,
+                     bool (*filter)(ExRootTreeReader *,
+                                    map<string, TClonesArray *>,
+                                    int,
+                                    vector<int> &,
+                                    vector<pair<Jet*,Jet*>> &))
+{
+  Long64_t numberOfEntries = treeReader->GetEntries();
+
+  for (Int_t entry = 0; entry < numberOfEntries; ++entry)
+  {
+    if (cutsArr[entry])
+    {
+      filter(treeReader, branchDict, entry, cutsArr, jetPairs);
+    }
+  }
+}
