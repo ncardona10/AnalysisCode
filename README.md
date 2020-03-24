@@ -1,2 +1,5 @@
 # AnalysisCode
-Root data analyzer.  
+Root data analyzer to perform phenomenological analysis.  
+
+Project Organization
+------------
